@@ -1,11 +1,15 @@
 from enum import Enum
-from typing import Literal
+from typing import Literal, Self
 
 from .constant import LIB_FILE_PATH
 from .loader import load_lib
 
 
-class Font(Enum):
+class FontSize(Enum):
+    """
+    All supported font size enum
+    """
+
     FONT_4X6 = 0
     FONT_5X8 = 1
     FONT_5X12 = 2
@@ -24,140 +28,323 @@ class Font(Enum):
 
 
 class Color(Enum):
-    COLOR_WHITE = 0xFFFF
-    COLOR_BLACK = 0x0000
-    COLOR_BLUE = 0x001F
-    COLOR_BRED = 0xF81F
-    COLOR_GRED = 0xFFE0
-    COLOR_GBLUE = 0x07FF
-    COLOR_RED = 0xF800
-    COLOR_MAGENTA = 0xF81F
-    COLOR_GREEN = 0x07E0
-    COLOR_CYAN = 0x7FFF
-    COLOR_YELLOW = 0xFFE0
-    COLOR_BROWN = 0xBC40
-    COLOR_BRRED = 0xFC07
-    COLOR_GRAY = 0x8430
-    COLOR_DARKBLUE = 0x01CF
-    COLOR_LIGHTBLUE = 0x7D7C
-    COLOR_GRAYBLUE = 0x5458
-    COLOR_LIGHTGREEN = 0x841F
-    COLOR_LGRAY = 0xC618
-    COLOR_LGRAYBLUE = 0xA651
-    COLOR_LBBLUE = 0x2B12
+    """
+    All supported color display on the led/lcd
+    """
+
+    WHITE = 0xFFFF
+    BLACK = 0x0000
+    BLUE = 0x001F
+    BRED = 0xF81F
+    GRED = 0xFFE0
+    GBLUE = 0x07FF
+    RED = 0xF800
+    MAGENTA = 0xF81F
+    GREEN = 0x07E0
+    CYAN = 0x7FFF
+    YELLOW = 0xFFE0
+    BROWN = 0xBC40
+    BRRED = 0xFC07
+    GRAY = 0x8430
+    DARKBLUE = 0x01CF
+    LIGHTBLUE = 0x7D7C
+    GRAYBLUE = 0x5458
+    LIGHTGREEN = 0x841F
+    LGRAY = 0xC618
+    LGRAYBLUE = 0xA651
+    LBBLUE = 0x2B12
 
 
-class Screen(object):
+class Screen:
     """
     Screen module
+
+    This class represents an LCD screen and provides methods to manipulate it.
+    Each method returns self to enable chainable calls.
     """
 
     lib = load_lib(LIB_FILE_PATH)
 
     def __init__(self, init_screen: bool = True):
+
         if init_screen:
-            Screen.open()
-            Screen.fill_screen(Color.COLOR_BLACK)
-            Screen.refresh()
+            self.open(direction=2).fill_screen(Color.BLACK).refresh()
 
-    @staticmethod
-    def open(direction: Literal[1, 2] = 2):
+    def open(self, direction: Literal[1, 2] = 2) -> Self:
         """
-        open with lcd ,and set the LCD displaying direction
+        Open the LCD and set the displaying direction.
 
-        1 for vertical, 2 for horizontal
+        Args:
+          direction (Literal[1, 2]): Display direction; 1 for vertical, 2 for horizontal.
+
+        Returns:
+          Self for chainable calls.
         """
+        self.lib.lcd_open(direction)
+        return self
 
-        return Screen.lib.lcd_open(direction)
-
-    @staticmethod
-    def refresh():
+    def refresh(self) -> Self:
         """
-        refresh the screen, print the display data in the cache on the screen
+        Refresh the screen, printing the display data from the cache onto the screen.
+
+        Returns:
+          Self for chainable calls.
         """
-        Screen.lib.LCD_Refresh()
+        self.lib.LCD_Refresh()
+        return self
 
-    @staticmethod
-    def set_font_size(font_size: Font):
-        Screen.lib.LCD_SetFont(font_size.value)
-
-    @staticmethod
-    def set_fore_color(color: Color):
+    def set_font_size(self, font_size: FontSize) -> Self:
         """
-        set the fore color
+        Set the font size.
+
+        Args:
+          font_size (FontSize): The desired font size.
+
+        Returns:
+          Self for chainable calls.
         """
-        Screen.lib.UG_SetForecolor(color)
+        self.lib.LCD_SetFont(font_size.value)
+        return self
 
-    @staticmethod
-    def set_back_color(color: Color):
+    def set_fore_color(self, color: Color) -> Self:
         """
-        set the LCD background color
+        Set the foreground color.
+
+        Args:
+          color (Color): The desired foreground color.
+
+        Returns:
+          Self for chainable calls.
         """
-        Screen.lib.UG_SetBackcolor(color)
+        self.lib.UG_SetForecolor(color)
+        return self
 
-    @staticmethod
-    def set_led_color(index: int, color: Color):
+    def set_back_color(self, color: Color) -> Self:
         """
-        set the color of the LED according to index and color
+        Set the background color of the LCD.
+
+        Args:
+          color (Color): The desired background color.
+
+        Returns:
+          Self for chainable calls.
         """
-        Screen.lib.adc_led_set(index, color.value)
+        self.lib.UG_SetBackcolor(color)
+        return self
 
-    @staticmethod
-    def fill_screen(color: Color):
+    def set_led_color(self, index: Literal[0, 1], color: Color) -> Self:
         """
-        fill the screen with the given color
+        Set the LED color at a specific index.
+
+        Parameters:
+            index (Literal[0, 1]): The index of the LED to set the color for.
+            color (Color): The color to set for the LED.
+
+        Returns:
+            Self: The instance of the class to allow for method chaining.
         """
-        Screen.lib.UG_FillScreen(color)
+        self.lib.adc_led_set(index, color.value)
+        return self
 
-    @staticmethod
-    def put_string(x: int, y: int, display_string: str):
+    def fill_screen(self, color: Color) -> Self:
         """
-        x,y(unit:pixel) are the coordinates of where the string that will be displayed
+        Fill the entire screen with the specified color.
 
-        display_string is  string that will be displayed in the LCD
+        Args:
+          color (Color): The color to fill the screen with.
 
+        Returns:
+          Self for chainable calls.
         """
-        Screen.lib.UG_PutString(x, y, display_string.encode())
+        self.lib.UG_FillScreen(color.value)
+        return self
 
-    @staticmethod
-    def fill_frame(x1, y1, x2, y2, color: Color):
-        Screen.lib.UG_FillFrame(x1, y1, x2, y2, color.value)
+    def put_string(self, x: int, y: int, display_string: str) -> Self:
+        """
+        Place a string at specific coordinates on the LCD.
 
-    @staticmethod
-    def fill_round_frame(x1, y1, x2, y2, r, color: Color):
-        Screen.lib.UG_FillRoundFrame(x1, y1, x2, y2, r, color.value)
+        Args:
+          x (int): X coordinate (in pixels).
+          y (int): Y coordinate (in pixels).
+          display_string (str): The string to display on the LCD.
 
-    @staticmethod
-    def fill_circle(x0, y0, r, color: Color):
-        Screen.lib.UG_FillCircle(x0, y0, r, color.value)
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_PutString(x, y, display_string)
+        return self
 
-    @staticmethod
-    def draw_mesh(x1, y1, x2, y2, color: Color):
-        Screen.lib.UG_DrawMesh(x1, y1, x2, y2, color.value)
+    def fill_frame(self, x1: int, y1: int, x2: int, y2: int, color: Color) -> Self:
+        """
+        Fill a rectangular frame with the specified color.
 
-    @staticmethod
-    def draw_frame(x1, y1, x2, y2, color: Color):
-        Screen.lib.UG_DrawFrame(x1, y1, x2, y2, color.value)
+        Args:
+          x1 (int): The X coordinate of the top-left corner.
+          y1 (int): The Y coordinate of the top-left corner.
+          x2 (int): The X coordinate of the bottom-right corner.
+          y2 (int): The Y coordinate of the bottom-right corner.
+          color (Color): The color to fill the frame with.
 
-    @staticmethod
-    def draw_round_frame(x1, y1, x2, y2, r, color: Color):
-        Screen.lib.UG_DrawRoundFrame(x1, y1, x2, y2, r, color.value)
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_FillFrame(x1, y1, x2, y2, color.value)
+        return self
 
-    @staticmethod
-    def draw_pixel(x0, y0, color: Color):
-        Screen.lib.UG_DrawPixel(x0, y0, color.value)
+    def fill_round_frame(
+        self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color
+    ) -> Self:
+        """
+        Fill a rounded rectangular frame with the specified color.
 
-    @staticmethod
-    def draw_circle(x0, y0, r, color: Color):
-        Screen.lib.UG_DrawCircle(x0, y0, r, color.value)
+        Args:
+          x1 (int): The X coordinate of the top-left corner.
+          y1 (int): The Y coordinate of the top-left corner.
+          x2 (int): The X coordinate of the bottom-right corner.
+          y2 (int): The Y coordinate of the bottom-right corner.
+          r (int): The radius of the corners.
+          color (Color): The color to fill the round frame with.
 
-    @staticmethod
-    def draw_arc(x0: int, y0: int, r, s, color: Color):
-        Screen.lib.UG_DrawArc(x0, y0, r, s, color.value)
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_FillRoundFrame(x1, y1, x2, y2, r, color.value)
+        return self
 
-    @staticmethod
-    def draw_line(x1: int, y1: int, x2: int, y2: int, color: Color):
-        Screen.lib.UG_DrawLine(x1, y1, x2, y2, color.value)
+    def fill_circle(self, x0: int, y0: int, r: int, color: Color) -> Self:
+        """
+        Fill a circle with the specified color.
+
+        Args:
+          x0 (int): The X coordinate of the circle center.
+          y0 (int): The Y coordinate of the circle center.
+          r (int): The radius of the circle.
+          color (Color): The color to fill the circle with.
+
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_FillCircle(x0, y0, r, color.value)
+        return self
+
+    def draw_mesh(self, x1: int, y1: int, x2: int, y2: int, color: Color) -> Self:
+        """
+        Draw a mesh pattern within a rectangle with the specified color.
+
+        Args:
+          x1 (int): The X coordinate of the top-left corner.
+          y1 (int): The Y coordinate of the top-left corner.
+          x2 (int): The X coordinate of the bottom-right corner.
+          y2 (int): The Y coordinate of the bottom-right corner.
+          color (Color): The color of the mesh lines.
+
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_DrawMesh(x1, y1, x2, y2, color.value)
+        return self
+
+    def draw_frame(self, x1: int, y1: int, x2: int, y2: int, color: Color) -> Self:
+        """
+        Draw an empty rectangular frame with the specified color.
+
+        Args:
+          x1 (int): The X coordinate of the top-left corner.
+          y1 (int): The Y coordinate of the top-left corner.
+          x2 (int): The X coordinate of the bottom-right corner.
+          y2 (int): The Y coordinate of the bottom-right corner.
+          color (Color): The color of the frame lines.
+
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_DrawFrame(x1, y1, x2, y2, color.value)
+        return self
+
+    def draw_round_frame(
+        self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color
+    ) -> Self:
+        """
+        Draw an empty rounded rectangular frame with the specified color.
+
+        Args:
+          x1 (int): The X coordinate of the top-left corner.
+          y1 (int): The Y coordinate of the top-left corner.
+          x2 (int): The X coordinate of the bottom-right corner.
+          y2 (int): The Y coordinate of the bottom-right corner.
+          r (int): The radius of the corners.
+          color (Color): The color of the frame lines.
+
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_DrawRoundFrame(x1, y1, x2, y2, r, color.value)
+        return self
+
+    def draw_pixel(self, x0: int, y0: int, color: Color) -> Self:
+        """
+        Draw a single pixel at the specified coordinates with the specified color.
+
+        Args:
+          x0 (int): The X coordinate of the pixel.
+          y0 (int): The Y coordinate of the pixel.
+          color (Color): The color of the pixel.
+
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_DrawPixel(x0, y0, color.value)
+        return self
+
+    def draw_circle(self, x0: int, y0: int, r: int, color: Color) -> Self:
+        """
+        Draw an empty circle with the specified color.
+
+        Args:
+          x0 (int): The X coordinate of the circle center.
+          y0 (int): The Y coordinate of the circle center.
+          r (int): The radius of the circle.
+          color (Color): The color of the circle lines.
+
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_DrawCircle(x0, y0, r, color.value)
+        return self
+
+    def draw_arc(self, x0: int, y0: int, r: int, s: int, color: Color) -> Self:
+        """
+        Draw an arc with the specified color.
+
+        Args:
+          x0 (int): The X coordinate of the circle center.
+          y0 (int): The Y coordinate of the circle center.
+          r (int): The radius of the arc circle.
+          s (int): The starting angle of the arc.
+          color (Color): The color of the arc lines.
+
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_DrawArc(x0, y0, r, s, color.value)
+        return self
+
+    def draw_line(self, x1: int, y1: int, x2: int, y2: int, color: Color) -> Self:
+        """
+        Draw a line between two points with the specified color.
+
+        Args:
+          x1 (int): The X coordinate of the first point.
+          y1 (int): The Y coordinate of the first point.
+          x2 (int): The X coordinate of the second point.
+          y2 (int): The Y coordinate of the second point.
+          color (Color): The color of the line.
+
+        Returns:
+          Self for chainable calls.
+        """
+        self.lib.UG_DrawLine(x1, y1, x2, y2, color.value)
+        return self
 
 
 if __name__ == "__main__":
