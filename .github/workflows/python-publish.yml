@@ -28,4 +28,7 @@ jobs:
         python-version: '3.11'
     - uses: pdm-project/setup-pdm@v3
     - name: Publish package
+      env:
+          PDM_PUBLISH_USERNAME: __token__
+          PDM_PUBLISH_PASSWORD: ${{ secrets.PYPI_TOKEN }}
       run: pdm publish
