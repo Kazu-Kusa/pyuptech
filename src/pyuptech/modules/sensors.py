@@ -105,10 +105,8 @@ class OnBoardSensors:
         }
         """
         current = perf_counter_ns()
-        if (
-            current - OnBoardSensors.last_update_timestamp
-            < OnBoardSensors.__adc_min_sample_interval_ns
-        ):
+        samp_interval = OnBoardSensors.__adc_min_sample_interval_ns
+        if current - OnBoardSensors.last_update_timestamp < samp_interval:
             OnBoardSensors.last_update_timestamp = current
             return OnBoardSensors.acc_all
         OnBoardSensors.__lib.ADC_GetAll(OnBoardSensors._adc_all)

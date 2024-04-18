@@ -65,10 +65,19 @@ class Screen:
 
     lib = load_lib(LIB_FILE_PATH)
 
-    def __init__(self, init_screen: bool = True):
+    def __init__(self, screen_dir: Literal[1, 2] = None):
+        """
+        Initializes the Screen class.
 
-        if init_screen:
-            self.open(direction=2).fill_screen(Color.BLACK).refresh()
+        Parameters:
+            screen_dir (Literal[1, 2], optional): The direction to open the screen in. Defaults to None.
+
+        Returns:
+            None
+        """
+
+        if screen_dir is not None:
+            self.open(direction=screen_dir).fill_screen(Color.BLACK).refresh()
 
     def open(self, direction: Literal[1, 2] = 2) -> Self:
         """

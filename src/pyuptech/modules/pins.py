@@ -4,6 +4,7 @@ PinSetter = Callable[[int], None]
 IndexedSetter = Callable[[int, int], None]
 PinGetter = Callable[[], int]
 IndexedGetter = Callable[[int], int]
+PinModeSetter = Callable[[int], None]
 
 
 def pin_setter_constructor(indexed_setter: IndexedSetter, pin: int) -> PinSetter:
@@ -38,9 +39,6 @@ def pin_getter_constructor(indexed_getter: IndexedGetter, pin: int) -> PinGetter
         return indexed_getter(pin)
 
     return get_pin_level
-
-
-PinModeSetter = Callable[[int], None]
 
 
 def pin_mode_setter_constructor(
