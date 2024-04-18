@@ -3,6 +3,14 @@
 > 一个API包装库，通过调用TechStar的二进制so库完成的功能
 ---
 
+# 安装
+
+使用`pdm`安装
+
+```shell
+pdm add pyuptech
+```
+
 ## OnBoardSensors
 
 **简介**
