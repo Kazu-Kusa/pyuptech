@@ -3,6 +3,7 @@ from typing import Literal, Self
 
 from .constant import LIB_FILE_PATH
 from .loader import load_lib
+from .logger import _logger
 
 
 class FontSize(Enum):
@@ -89,6 +90,8 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
+
+        _logger.info(f"Open LCD with direction: {direction}")
         self.lib.lcd_open(direction)
         return self
 

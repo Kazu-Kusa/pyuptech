@@ -59,6 +59,7 @@ class OnBoardSensors:
         """
         open the adc-io plug
         """
+        _logger.info("Initializing ADC-IO")
         return OnBoardSensors.__lib.adc_io_open()
 
     @staticmethod
@@ -66,6 +67,7 @@ class OnBoardSensors:
         """
         close the adc-io plug
         """
+        _logger.info("Closing ADC-IO")
         OnBoardSensors.__lib.adc_io_close()
 
     @staticmethod
@@ -110,6 +112,7 @@ class OnBoardSensors:
             OnBoardSensors.last_update_timestamp = current
             return OnBoardSensors.acc_all
         OnBoardSensors.__lib.ADC_GetAll(OnBoardSensors._adc_all)
+
         return OnBoardSensors._adc_all
 
     def set_io_level(self, index: int, level: int) -> Self:
@@ -249,9 +252,9 @@ class OnBoardSensors:
         success = OnBoardSensors.__lib.mpu6500_dmp_init()
 
         if success:
-            _logger.critical("Failed to initialize MPU6500")
+            _logger.warning("Failed to initialize MPU6500")
         else:
-            _logger.info("#MPU6500 successfully initialized")
+            _logger.info("MPU6500 successfully initialized")
         return self
 
     @staticmethod
