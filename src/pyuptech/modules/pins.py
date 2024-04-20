@@ -1,10 +1,10 @@
-from typing import Sequence, Callable
+from typing import Sequence, Callable, TypeAlias
 
-PinSetter = Callable[[int], None]
-IndexedSetter = Callable[[int, int], None]
-PinGetter = Callable[[], int]
-IndexedGetter = Callable[[int], int]
-PinModeSetter = Callable[[int], None]
+PinSetter: TypeAlias = Callable[[int], None]
+IndexedSetter: TypeAlias = Callable[[int, int], None]
+PinGetter: TypeAlias = Callable[[], int]
+IndexedGetter: TypeAlias = Callable[[int], int]
+PinModeSetter: TypeAlias = Callable[[int], None]
 
 
 def pin_setter_constructor(indexed_setter: IndexedSetter, pin: int) -> PinSetter:
