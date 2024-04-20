@@ -47,24 +47,26 @@ pdm add pyuptech
 ### QUICKSTART
 
 ```python
-from pyuptech import OnBoardSensors, OUTPUT, LOW
+from pyuptech import OnBoardSensors
+from ctypes import c_uint8, Array
 
-# 创建OnBoardSensors对象
-sensor_controller = OnBoardSensors()
+# 创建OnBoardSensors对象，设置模拟量传感器最小采样间隔为5ms
+sensor_controller = OnBoardSensors(adc_min_sample_interval_ms=5)
 
-# 设置ADC最小采样间隔为10ms
+# 设置ADC最小采样间隔为10ms，防止请求堵塞STM32从机
 sensor_controller.adc_min_sample_interval_ms = 10
 
 # 获取所有GPIO引脚当前电平
-gpio_levels = sensor_controller.io_all_channels()
+gpio_levels: c_uint8 = sensor_controller.io_all_channels()
+print(gpio_levels)
 
 # 初始化并读取MPU6500加速度数据
 sensor_controller.MPU6500_Open()
-acceleration_data = sensor_controller.acc_all()
+acceleration_data: Array = sensor_controller.acc_all()
 
 # 设置第3号GPIO引脚为输出并设置电平为低
-sensor_controller.set_io_mode(2, OUTPUT)
-sensor_controller.set_io_level(2, LOW)
+sensor_controller.set_io_mode(2, 1)
+sensor_controller.set_io_level(2, 0)
 ```
 
 ---
@@ -169,3 +171,52 @@ from logging import CRITICAL
 
 set_log_level(CRITICAL)  # 上述代码与上面设置效果一致，即只记录CRITICAL及其以上级别的日志信息
 ```
+
+---
+
+## 调试
+
+通过 `tools.display` 可以将传感器数据打印到终端或者主板板载LCD屏幕上
+
+```python
+from pyuptech import (
+    mpu_display_on_lcd,
+    mpu_display_on_console,
+    adc_io_display_on_lcd,
+    adc_io_display_on_console)
+
+mpu_display_on_console()  # 将MPU6500数据打印到终端
+
+mpu_display_on_lcd(mode="acc")  # 将MPU6500加速度数据打印到LCD
+
+# 定义ADC标签索引字典，可以空缺部分键值
+adc_labels = {
+    6: 'EDGE_FL',
+    7: "EDGE_RL",
+    2: 'EDGE_FR',
+    1: 'EDGE_RR',
+    8: 'L1',
+    0: 'R1',
+    3: 'FB', 5: 'RB',
+    4: 'GRAY'
+}
+# 定义IO标签索引字典,可以空缺部分键值
+io_labels = {
+    3: "gray l",
+    2: "gray r",
+
+    7: 'ftl',
+    6: 'ftr',
+    5: 'rtr'
+}
+
+adc_io_display_on_lcd(adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到LCD 
+
+adc_io_display_on_console(adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到终端 
+
+
+
+
+```
+
+
