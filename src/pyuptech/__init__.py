@@ -18,7 +18,7 @@ from .tools.display import (
     adc_io_display_on_lcd,
     adc_io_display_on_console,
     mpu_display_on_lcd,
-    mpu_terminal_display,
+    mpu_display_on_console,
 )
 
 __all__ = [
@@ -43,5 +43,5 @@ __all__ = [
     "adc_io_display_on_lcd",
     "adc_io_display_on_console",
     "mpu_display_on_lcd",
-    "mpu_terminal_display",
+    "mpu_display_on_console",
 ]

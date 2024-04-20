@@ -1,6 +1,5 @@
-import string
 import time
-from typing import Literal, List, Dict
+from typing import Literal, Dict
 
 from ..modules.screen import Screen, Color, FontSize
 from ..modules.sensors import OnBoardSensors
@@ -45,7 +44,7 @@ def mpu_display_on_lcd(mode: Literal["atti", "acc", "gyro"]):
     screen.refresh()
 
 
-def mpu_terminal_display():
+def mpu_display_on_console():
     """
     Display the MPU data in a formatted table in the terminal.
 
@@ -82,27 +81,34 @@ def mpu_terminal_display():
     print(table.table)
 
 
-def adc_io_display_on_console(adc_names: List[str] = None, io_names: List[str] = None):
+def adc_io_display_on_console(
+    adc_labels: Dict[int, str] = None, io_labels: Dict[int, str] = None
+):
     """
-    Display the ADC and IO values in a formatted table.
+    Displays ADC and IO channel values on the console using the terminaltables library.
 
-    Parameters:
-        adc_names (List[str], optional): A list of names for the ADC channels.
-            If not provided, default names will be used.
-        io_names (List[str], optional): A list of names for the IO channels.
-            If not provided, default names will be used.
+    Args:
+        adc_labels (Dict[int, str], optional): A dictionary mapping ADC channel indices to custom labels. Defaults to None.
+        io_labels (Dict[int, str], optional): A dictionary mapping IO channel indices to custom labels. Defaults to None.
 
     Returns:
         None
+
+    Raises:
+        None
+
+
     """
     from terminaltables import DoubleTable
 
+    adc_labels = adc_labels or {}
+    io_labels = io_labels or {}
     adc = sensors.adc_all_channels()
     io = sensors.io_all_channels()
     rows = [
-        ["Names"] + (adc_names or [f"ADC{i}" for i in range(10)]),
+        ["Names"] + ([adc_labels.get(i, f"ADC{i}") for i in range(10)]),
         ["ADC"] + [f"{x}" for x in adc],
-        ["Names"] + (io_names or [f"IO{i}" for i in range(10)]),
+        ["Names"] + ([io_labels.get(i, f"IO{i}") for i in range(8)]),
         ["IO"] + [int(bit) for bit in format(io, "08b")],
     ]
     table = DoubleTable(rows)
@@ -130,20 +136,21 @@ def adc_io_display_on_lcd(
         KeyboardInterrupt: If the user interrupts the program by pressing Ctrl+C.
     """
 
-    # 字段标签的默认名称（只适用于单字符字段）
-    default_labels = dict(zip(range(17), string.ascii_uppercase))
     screen.set_font_size(FontSize.FONT_6X8)
-
+    adc_labels = adc_labels or {}
+    io_labels = io_labels or {}
+    adc = sensors.adc_all_channels()
     # 打印 ADC 通道值表格
     for i in range(9):
-        label = adc_labels.get(i, f"[{i}]") if adc_labels else default_labels[i]
-        value = sensors.adc_all_channels()[i]
+        label = adc_labels.get(i, f"[{i}]")
+        value = adc[i]
         screen.put_string(0, i * 8, f"{label}:{value}")
 
+    io = [int(bit) for bit in format(sensors.io_all_channels(), "08b")]
     # 打印 IO 通道值表格
     for i in range(8):
-        label = io_labels.get(i, f"[{i}]") if io_labels else default_labels[i + 9]
-        value = [int(bit) for bit in format(sensors.io_all_channels(), "08b")]
+        label = io_labels.get(i, f"[{i}]")
+        value = io[i]
         screen.put_string(90, i * 8, f"{label}:{value}")
     screen.fill_screen(Color.BLACK).refresh()
     time.sleep(interval)
