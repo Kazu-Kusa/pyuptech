@@ -1,9 +1,10 @@
-from typing import Sequence, Callable, TypeAlias
+from typing import Sequence, Callable, TypeAlias, SupportsIndex
 
 PinSetter: TypeAlias = Callable[[int], None]
-IndexedSetter: TypeAlias = Callable[[int, int], None]
 PinGetter: TypeAlias = Callable[[], int]
-IndexedGetter: TypeAlias = Callable[[int], int]
+IndexedSetter: TypeAlias = Callable[[SupportsIndex, int], None]
+IndexedGetter: TypeAlias = Callable[[SupportsIndex], int]
+
 PinModeSetter: TypeAlias = Callable[[int], None]
 
 
