@@ -53,12 +53,15 @@ from ctypes import c_uint8, Array
 # 创建OnBoardSensors对象，设置模拟量传感器最小采样间隔为5ms
 sensor_controller = OnBoardSensors(adc_min_sample_interval_ms=5)
 
+# 初始化ADC,设置所有GPIO引脚为输入，设置初始电平为高
+sensor_controller.adc_io_open().set_all_io_mode(0).set_all_io_level(1)
+
 # 设置ADC最小采样间隔为10ms，防止请求堵塞STM32从机
 sensor_controller.adc_min_sample_interval_ms = 10
 
 # 获取所有GPIO引脚当前电平
 gpio_levels: c_uint8 = sensor_controller.io_all_channels()
-print(gpio_levels)
+print(gpio_levels.value)
 
 # 初始化并读取MPU6500加速度数据
 sensor_controller.MPU6500_Open()
@@ -180,10 +183,14 @@ set_log_level(CRITICAL)  # 上述代码与上面设置效果一致，即只记�
 
 ```python
 from pyuptech import (
+    set_emulation_mode,
     mpu_display_on_lcd,
     mpu_display_on_console,
     adc_io_display_on_lcd,
     adc_io_display_on_console)
+
+# 关闭模拟模式，不关闭将无法进行正常的实机运行
+set_emulation_mode("off")
 
 mpu_display_on_console()  # 将MPU6500数据打印到终端
 
@@ -215,8 +222,42 @@ adc_io_display_on_lcd(adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GP
 adc_io_display_on_console(adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到终端 
 
 
+```
+
+## 使用传感器仿真器
+
+通过 `modules.emulation.SensorEmulator` 可以使用传感器仿真器
+
+```python
+
+# 传感器仿真器导入
+from pyuptech import SensorEmulator
+
+# SensorEmulator 通过继承 OnBoardSensors 类并重写与硬件的交互方法完成的一个仿真器，所以它具有的方法是和OnBoardSensors 基本一致
+# Note: 所有返回的数据都是随机生成的，只是用于演示
+sensor_emulator = SensorEmulator(adc_min_sample_interval_ms=10)
+
+print(sensor_emulator.adc_io_open())
+
+print(list(sensor_emulator.MPU6500_Open().acc_all()))
 
 
 ```
 
+配合 `modules.display` 使用
+
+```python
+from pyuptech import (
+    set_emulation_mode,
+    mpu_display_on_console,
+    adc_io_display_on_console)
+
+# 启动模拟模式，以便打印可以正常使用随机生成的数据进行工作
+set_emulation_mode("on")
+
+mpu_display_on_console()  # 将MPU6500数据打印到终端
+
+adc_io_display_on_console()  # 将ADC和GPIO数据打印到终端
+
+```
 
