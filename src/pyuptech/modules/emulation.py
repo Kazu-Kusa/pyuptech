@@ -2,7 +2,7 @@ import ctypes
 from random import randint
 from typing import Self, Literal, Any
 
-from .sensors import OnBoardSensors
+from .sensors import OnBoardSensors, MPUDataPack, ADCDataPack
 
 
 class SensorEmulator(OnBoardSensors):
@@ -29,41 +29,41 @@ class SensorEmulator(OnBoardSensors):
         return self
 
     @staticmethod
-    def io_all_channels() -> ctypes.c_uint8:
-        return ctypes.c_uint8(randint(*SensorEmulator.io_rand_range))
+    def io_all_channels() -> int:
+        return ctypes.c_uint8(randint(*SensorEmulator.io_rand_range)).value
 
-    def adc_all_channels(self) -> ctypes.Array:
+    def adc_all_channels(self) -> ADCDataPack:
 
         for i in range(10):
             self._adc_all[i] = randint(*self.adc_rand_range)
 
-        return self._adc_all
+        return tuple(self._adc_all)  # type: ignore
 
     def MPU6500_Open(self) -> Self:
         return self
 
-    def acc_all(self) -> ctypes.Array:
+    def acc_all(self) -> MPUDataPack:
         for i in range(3):
             self._accel_all[i] = randint(*self.mpu_rand_range)
-        return self._accel_all
+        return tuple(self._accel_all)  # type: ignore
 
-    def gyro_all(self) -> ctypes.Array:
+    def gyro_all(self) -> MPUDataPack:
         for i in range(3):
             self._gyro_all[i] = randint(*self.mpu_rand_range)
-        return self._gyro_all
+        return tuple(self._gyro_all)  # type: ignore
 
-    def atti_all(self) -> ctypes.Array:
+    def atti_all(self) -> MPUDataPack:
         for i in range(3):
             self._atti_all[i] = randint(*self.mpu_rand_range)
-        return self._atti_all
+        return tuple(self._atti_all)  # type: ignore
 
     @staticmethod
     def get_io_level(index: Literal[0, 1, 2, 3, 4, 5, 6, 7]) -> int:
         return randint(0, 1)
 
     @staticmethod
-    def get_all_io_mode() -> bytes:
-        return ctypes.c_char(randint(*SensorEmulator.io_rand_range)).value
+    def get_all_io_mode() -> int:
+        return ctypes.c_char(randint(*SensorEmulator.io_rand_range)).value[0]
 
     @staticmethod
     def get_handle(attr_name: str) -> Any:

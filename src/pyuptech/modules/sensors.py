@@ -1,6 +1,6 @@
 import ctypes
 from time import perf_counter_ns
-from typing import Self, Literal, Any, Callable
+from typing import Self, Literal, Any, Callable, Tuple, TypeAlias
 
 from .loader import TECHSTAR_LIB
 from .logger import _logger
@@ -18,6 +18,9 @@ LOW = 0
 ADCArrayType: Callable = ctypes.c_uint16 * 10  # type: ignore
 # on 32bit machine, this will create a C array of 3 floats with bit-width of 4 bytes
 MPUArrayType: Callable = ctypes.c_float * 3  # type: ignore
+
+ADCDataPack: TypeAlias = Tuple[int, int, int, int, int, int, int, int, int, int]
+MPUDataPack: TypeAlias = Tuple[float, float, float]
 
 
 class OnBoardSensors:
@@ -47,6 +50,7 @@ class OnBoardSensors:
             >>> on_board = OnBoardSensors().adc_io_open().set_all_io_mode(0).set_all_io_level(1).MPU6500_Open()
         """
 
+        self._adc_cache: ADCDataPack = (0,) * 10
         self._adc_all: ctypes.Array = ADCArrayType()
         self._accel_all: ctypes.Array = MPUArrayType()
         self._gyro_all: ctypes.Array = MPUArrayType()
@@ -96,12 +100,12 @@ class OnBoardSensors:
             _logger.error("Failed to close ADC-IO")
         return self
 
-    def adc_all_channels(self) -> ctypes.Array:
+    def adc_all_channels(self) -> ADCDataPack:
         """
         Get all the ADC channels. Length = 10
 
         Returns:
-            ctypes.Array: An array containing the values of all the ADC channels.
+            ADCDataPack: An array containing the values of all the ADC channels.
         """
 
         can_update_time = (
@@ -109,11 +113,12 @@ class OnBoardSensors:
         )
         if can_update_time > (current := perf_counter_ns()):
 
-            return self._adc_all
+            return self._adc_cache
         self.__adc_last_sample_timestamp = current
         if TECHSTAR_LIB.ADC_GetAll(self._adc_all):
             _logger.error("Failed to get all ADC channels")
-        return self._adc_all
+        self._adc_cache = tuple(self._adc_all)
+        return self._adc_cache  # type: ignore
 
     def set_io_level(self, index: int, level: Literal[0, 1]) -> Self:
         """
@@ -161,17 +166,20 @@ class OnBoardSensors:
         return self
 
     @staticmethod
-    def get_all_io_mode() -> bytes:
+    def get_all_io_mode() -> int:
         """
         Get all IO modes. length = 8,store as bit0,bit1,bit2,bit3,bit4,bit5,bit6,bit7
 
         Returns:
-            bytes: A buffer containing all IO modes.
+            int: A buffer containing all IO modes.
+        Examples:
+            0b10000000 => 第io7为输出模式，可用于驱动舵机
+            0b00000001 => 第io0为输入模式，可用于外接传感器
         """
         buffer = ctypes.c_char()
         if TECHSTAR_LIB.adc_io_ModeGetAll(buffer):
             _logger.error("Failed to get all IO mode")
-        return buffer.value
+        return buffer.value[0]
 
     @staticmethod
     def get_io_level(index: Literal[0, 1, 2, 3, 4, 5, 6, 7]) -> int:
@@ -235,13 +243,17 @@ class OnBoardSensors:
         return self
 
     @staticmethod
-    def io_all_channels() -> ctypes.c_uint8:
+    def io_all_channels() -> int:
         """
         get all io plug input levels
 
         uint8, each bit represents a channel, 1 for high, 0 for low
+
+        Examples:
+            0b10000000 => 第io7为高电平
+            0b00000001 => 第io0为高电平
         """
-        return TECHSTAR_LIB.adc_io_InputGetAll()
+        return TECHSTAR_LIB.adc_io_InputGetAll().value
 
     def MPU6500_Open(self) -> Self:
         """
@@ -256,12 +268,12 @@ class OnBoardSensors:
             _logger.warning("Failed to initialize MPU6500")
         return self
 
-    def acc_all(self) -> ctypes.Array:
+    def acc_all(self) -> MPUDataPack:
         """
         Retrieves the acceleration data from the MPU6500 sensor.
 
         Returns:
-            ctypes.Array: An array containing the acceleration data.
+            MPUDataPack: An array containing the acceleration data.
         Notes:
             length = 3
             [0] ==> axis X
@@ -271,14 +283,14 @@ class OnBoardSensors:
         TECHSTAR_LIB.mpu6500_Get_Accel(
             self._accel_all
         )  # this function return a C pointer to the self._accel_all
-        return self._accel_all
+        return tuple(self._accel_all)  # type: ignore
 
-    def gyro_all(self) -> ctypes.Array:
+    def gyro_all(self) -> MPUDataPack:
         """
         Retrieves the gyroscope data from the MPU6500 sensor.
 
         Returns:
-            ctypes.Array: An array containing the gyroscope data.
+            MPUDataPack: An array containing the gyroscope data.
 
         Notes:
             length = 3
@@ -291,14 +303,14 @@ class OnBoardSensors:
             self._gyro_all
         )  # this function return a C pointer to the self._gyro_all
 
-        return self._gyro_all
+        return tuple(self._gyro_all)  # type: ignore
 
-    def atti_all(self) -> ctypes.Array:
+    def atti_all(self) -> MPUDataPack:
         """
         Retrieves the attitude data from the MPU6500 sensor.
 
         Returns:
-            ctypes.Array: An array containing the attitude data.
+            MPUDataPack: An array containing the attitude data.
 
         Notes:
             length = 3
@@ -310,7 +322,7 @@ class OnBoardSensors:
             self._atti_all
         )  # this function return a C pointer to the self._atti_all
 
-        return self._atti_all
+        return tuple(self._atti_all)  # type: ignore
 
     @staticmethod
     def get_handle(attr_name: str) -> Any:

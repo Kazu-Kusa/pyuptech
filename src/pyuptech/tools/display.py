@@ -134,11 +134,14 @@ def adc_io_display_on_console(
     io_labels = io_labels or {}
     adc = sensors.adc_all_channels()
     io = sensors.io_all_channels()
+    io_modes = sensors.get_all_io_mode()
+
     rows = [
-        ["Names"] + ([adc_labels.get(i, f"ADC{i}") for i in range(10)]),
-        ["ADC"] + [f"{x}" for x in adc],
-        ["Names"] + ([io_labels.get(i, f"IO{i}") for i in range(8)]),
-        ["IO"] + [int(bit) for bit in f"{io.value:08b}"],
+        ["ADC Name"] + ([adc_labels.get(i, f"ADC{i}") for i in range(10)]),
+        ["ADC Data"] + [f"{x}" for x in adc],
+        ["IO Name"] + ([io_labels.get(i, f"IO{i}") for i in range(8)]),
+        ["IO Data"] + [int(bit) for bit in f"{io:08b}"],
+        ["IO Mode"] + [int(bit) for bit in f"{io_modes:08b}"],
     ]
     table = DoubleTable(rows)
     table.inner_row_border = True
@@ -175,7 +178,7 @@ def adc_io_display_on_lcd(
         value = adc[i]
         screen.put_string(0, i * 8, f"{label}:{value}")
 
-    io = [int(bit) for bit in f"{sensors.io_all_channels().value:08b}"]
+    io = [int(bit) for bit in f"{sensors.io_all_channels():08b}"]
     # 打印 IO 通道值表格
     for i in range(8):
         label = io_labels.get(i, f"[{i}]")
