@@ -32,8 +32,21 @@ class OnBoardSensors:
     """
 
     def __init__(self, adc_min_sample_interval_ms: int = 5):
+        """
+        Initializes an instance of the OnBoardSensors class.
+        init the ADC, IO and MPU data slots
+        init sample freq limiter
 
-        self.adc_io_open().set_all_io_mode(0).set_all_io_level(1)
+        *Will NOT init the IO, ADC and MPU , you need to do it manually
+
+
+        Parameters:
+            adc_min_sample_interval_ms (int): The minimum sample interval in milliseconds for the ADC channels. Defaults to 5.
+
+        Examples:
+            >>> on_board = OnBoardSensors().adc_io_open().set_all_io_mode(0).set_all_io_level(1).MPU6500_Open()
+        """
+
         self._adc_all: ctypes.Array = ADCArrayType()
         self._accel_all: ctypes.Array = MPUArrayType()
         self._gyro_all: ctypes.Array = MPUArrayType()
