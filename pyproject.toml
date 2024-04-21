@@ -20,3 +20,9 @@ build-backend = "pdm.backend"
 
 [tool.pdm]
 distribution = true
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "viztracer>=0.16.2",
+    "pytest>=8.1.1",
+]
