@@ -1,6 +1,6 @@
 import ctypes
 from time import perf_counter_ns
-from typing import Self, Literal, Any
+from typing import Self, Literal, Any, Callable
 
 from .loader import TECHSTAR_LIB
 from .logger import _logger
@@ -8,35 +8,40 @@ from .logger import _logger
 E6 = 1000000
 
 """
+Only For IO, mode and level
 OUTPUT = 1
 INPUT = 0
 HIGH = 1
 LOW = 0
 """
+# this will create a function that returns a C array, but it can't be recognized correctly by the pycharm
+ADCArrayType: Callable = ctypes.c_uint16 * 10  # type: ignore
+# on 32bit machine, this will create a C array of 3 floats with bit-width of 4 bytes
+MPUArrayType: Callable = ctypes.c_float * 3  # type: ignore
 
 
 class OnBoardSensors:
     """
     provides sealed methods accessing to the IOs and builtin sensors
-    """
 
-    __adc_data_list_type = ctypes.c_uint16 * 10
-    __mpu_data_list_type = ctypes.c_float * 3
+    Owns 10 ADC channels and 3 MPU channels  and 8 IO channels
+
+    ADC: 9 for normal use, 1 for power voltage measurement(the last element in the seq)
+    IO: all the 8 are for normal use
+    MPU: all the 3 are for normal use
+    """
 
     def __init__(self, adc_min_sample_interval_ms: int = 5):
 
-        success = self.adc_io_open()
-        self.set_all_io_mode(0)
-        self.set_all_io_level(1)
-        self._adc_all: ctypes.Array = self.__adc_data_list_type()
-        self._accel_all: ctypes.Array = self.__mpu_data_list_type()
-        self._gyro_all: ctypes.Array = self.__mpu_data_list_type()
-        self._atti_all: ctypes.Array = self.__mpu_data_list_type()
+        self.adc_io_open().set_all_io_mode(0).set_all_io_level(1)
+        self._adc_all: ctypes.Array = ADCArrayType()
+        self._accel_all: ctypes.Array = MPUArrayType()
+        self._gyro_all: ctypes.Array = MPUArrayType()
+        self._atti_all: ctypes.Array = MPUArrayType()
 
         self.__adc_last_sample_timestamp: int = perf_counter_ns()
 
         self.__adc_min_sample_interval_ns: int = adc_min_sample_interval_ms * E6
-        _logger.debug(f"Sensor channel have inited [{success}] times")
 
     @property
     def last_sample_timestamp_ms(self) -> int:
@@ -63,8 +68,10 @@ class OnBoardSensors:
         open the adc-io plug
         """
         _logger.info("Initializing ADC-IO")
-        if TECHSTAR_LIB.adc_io_open():
+        if open_times := TECHSTAR_LIB.adc_io_open() == -1:
             _logger.error("Failed to open ADC-IO")
+        else:
+            _logger.debug(f"ADC-IO open {open_times} times")
         return self
 
     def adc_io_close(self) -> Self:
@@ -72,7 +79,7 @@ class OnBoardSensors:
         close the adc-io plug
         """
         _logger.info("Closing ADC-IO")
-        if TECHSTAR_LIB.adc_io_close():
+        if TECHSTAR_LIB.adc_io_close() == -1:
             _logger.error("Failed to close ADC-IO")
         return self
 
@@ -231,10 +238,9 @@ class OnBoardSensors:
             gyro: -+2000 degree/s
             sampling rate: 1kHz
         """
+        _logger.info("Initializing MPU6500...")
         if TECHSTAR_LIB.mpu6500_dmp_init():
             _logger.warning("Failed to initialize MPU6500")
-        else:
-            _logger.info("MPU6500 successfully initialized")
         return self
 
     def acc_all(self) -> ctypes.Array:
