@@ -15,6 +15,7 @@ from .modules.pins import (
 from .modules.screen import Screen, Color, FontSize
 from .modules.sensors import OnBoardSensors, ADCArrayType, MPUArrayType
 from .tools.display import (
+    set_emulation_mode,
     adc_io_display_on_lcd,
     adc_io_display_on_console,
     mpu_display_on_lcd,
@@ -43,6 +44,7 @@ __all__ = [
     "IndexedGetter",
     "IndexedSetter",
     # tools
+    "set_emulation_mode",
     "adc_io_display_on_lcd",
     "adc_io_display_on_console",
     "mpu_display_on_lcd",

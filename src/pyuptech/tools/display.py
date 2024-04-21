@@ -1,18 +1,47 @@
 import time
 from typing import Literal, Dict
 
+from ..modules.emulation import SensorEmulator
 from ..modules.screen import Screen, Color, FontSize
 from ..modules.sensors import OnBoardSensors
 
-sensors: OnBoardSensors = OnBoardSensors().adc_io_open()
-screen: Screen = (
-    Screen()
-    .open()
-    .fill_screen(Color.BLACK)
-    .refresh()
-    .set_led_color(0, Color.BROWN)
-    .set_led_color(1, Color.GRED)
-)
+sensors: OnBoardSensors | SensorEmulator | None = None
+screen: Screen | None = None
+
+
+def set_emulation_mode(mode: Literal["on", "off"]):
+    """
+    Sets the emulation mode of the sensors.
+
+    Args:
+        mode (Literal["on", "off"]): The emulation mode to set. Must be either "on" or "off".
+
+    Returns:
+        None
+
+    This function sets the emulation mode of the sensors. If the mode is "on", it creates a new instance of the SensorEmulator class and assigns it to the global variable "sensors". If the mode is "off", it creates a new instance of the OnBoardSensors class and assigns it to the global variable "sensors".
+
+    Raises:
+        None
+    """
+    global sensors, screen
+    match mode:
+        case "on":
+            #  仿真器不需要启动adc-io等硬件设备
+            sensors = SensorEmulator()
+            screen = None  # 仿真模式下，假设屏幕是脱机的
+        case "off":
+            sensors = (
+                OnBoardSensors().adc_io_open().set_all_io_mode(0).set_all_io_level(1)
+            )
+            screen = (
+                Screen()
+                .open()
+                .fill_screen(Color.BLACK)
+                .refresh()
+                .set_led_color(0, Color.BROWN)
+                .set_led_color(1, Color.GRED)
+            )
 
 
 def mpu_display_on_lcd(mode: Literal["atti", "acc", "gyro"]):
@@ -71,7 +100,7 @@ def mpu_display_on_console():
                 gyro_names[i],
                 f"{sensors.gyro_all()[i]:.2}",
                 atti_names[i],
-                f"{atti_names[i]:.2}",
+                f"{sensors.atti_all()[i]:.2}",
             ]
         )
 
@@ -109,7 +138,7 @@ def adc_io_display_on_console(
         ["Names"] + ([adc_labels.get(i, f"ADC{i}") for i in range(10)]),
         ["ADC"] + [f"{x}" for x in adc],
         ["Names"] + ([io_labels.get(i, f"IO{i}") for i in range(8)]),
-        ["IO"] + [int(bit) for bit in format(io, "08b")],
+        ["IO"] + [int(bit) for bit in f"{io.value:08b}"],
     ]
     table = DoubleTable(rows)
     table.inner_row_border = True
@@ -146,7 +175,7 @@ def adc_io_display_on_lcd(
         value = adc[i]
         screen.put_string(0, i * 8, f"{label}:{value}")
 
-    io = [int(bit) for bit in format(sensors.io_all_channels(), "08b")]
+    io = [int(bit) for bit in f"{sensors.io_all_channels().value:08b}"]
     # 打印 IO 通道值表格
     for i in range(8):
         label = io_labels.get(i, f"[{i}]")
