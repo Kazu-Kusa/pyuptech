@@ -1,3 +1,4 @@
+from .modules.emulation import SensorEmulator
 from .modules.loader import load_lib, TECHSTAR_LIB
 from .modules.logger import set_log_level
 from .modules.pins import (
@@ -12,8 +13,7 @@ from .modules.pins import (
     IndexedSetter,
 )
 from .modules.screen import Screen, Color, FontSize
-from .modules.sensors import OnBoardSensors
-
+from .modules.sensors import OnBoardSensors, ADCArrayType, MPUArrayType
 from .tools.display import (
     adc_io_display_on_lcd,
     adc_io_display_on_console,
@@ -23,6 +23,7 @@ from .tools.display import (
 
 __all__ = [
     "OnBoardSensors",
+    "SensorEmulator",
     "Screen",
     "Color",
     "FontSize",
@@ -34,6 +35,8 @@ __all__ = [
     "multiple_pin_mode_setter_constructor",
     "pin_mode_setter_constructor",
     # typing
+    "ADCArrayType",
+    "MPUArrayType",
     "PinGetter",
     "PinSetter",
     "PinModeSetter",
