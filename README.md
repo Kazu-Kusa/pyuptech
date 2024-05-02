@@ -59,7 +59,7 @@ pdm add pyuptech --pre
 
 ```python
 from pyuptech import OnBoardSensors
-from ctypes import c_uint8, Array
+from typing import Tuple
 
 # 创建OnBoardSensors对象，设置模拟量传感器最小采样间隔为5ms
 sensor_controller = OnBoardSensors(adc_min_sample_interval_ms=5)
@@ -71,16 +71,25 @@ sensor_controller.adc_io_open().set_all_io_mode(0).set_all_io_level(1)
 sensor_controller.adc_min_sample_interval_ms = 10
 
 # 获取所有GPIO引脚当前电平
-gpio_levels: c_uint8 = sensor_controller.io_all_channels()
-print(gpio_levels.value)
+gpio_levels: int = sensor_controller.io_all_channels()
+print(f'{gpio_levels:08b}')  # 打印GPIO引脚电平，每一位代表一个引脚，1表示高电平，0表示低电平，从低位到高位索引
+
+# 例如： 0000 0001 表示下标为0的传感器为高电平 
+# 例如： 0000 0100 表示下标为2的传感器为高电平 
 
 # 初始化并读取MPU6500加速度数据
 sensor_controller.MPU6500_Open()
-acceleration_data: Array = sensor_controller.acc_all()
+acceleration_data: Tuple[float, float, float] = sensor_controller.acc_all()
+# (x, y, z) = acceleration_data
+
 
 # 设置第3号GPIO引脚为输出并设置电平为低
 sensor_controller.set_io_mode(2, 1)
 sensor_controller.set_io_level(2, 0)
+
+# 设置第4号GPIO引脚为输入并设置电平为低
+sensor_controller.set_io_mode(3, 0)
+sensor_controller.set_io_level(3, 1)
 ```
 
 ---
