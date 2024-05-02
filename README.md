@@ -8,7 +8,18 @@
 使用`pdm`安装
 
 ```shell
+# 安装pdm
+python -m pip install pdm
+
+# 切换源
+pdm config pypi.url https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 安装pyuptech
 pdm add pyuptech
+
+# 或者安装不稳定版
+pdm add pyuptech --pre
+
 ```
 
 ## OnBoardSensors
