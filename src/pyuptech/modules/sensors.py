@@ -2,7 +2,8 @@ import ctypes
 from time import perf_counter_ns
 from typing import Self, Literal, Any, Callable, Tuple, TypeAlias
 
-from .loader import TECHSTAR_LIB
+from .constant import LIB_FILE_PATH
+from .loader import load_lib
 from .logger import _logger
 
 E6 = 1000000
@@ -21,6 +22,8 @@ MPUArrayType: Callable = ctypes.c_float * 3  # type: ignore
 
 ADCDataPack: TypeAlias = Tuple[int, int, int, int, int, int, int, int, int, int]
 MPUDataPack: TypeAlias = Tuple[float, float, float]
+
+__TECHSTAR_LIB__: ctypes.CDLL = load_lib(LIB_FILE_PATH)
 
 
 class OnBoardSensors:
@@ -85,7 +88,7 @@ class OnBoardSensors:
         open the adc-io plug
         """
         _logger.info("Initializing ADC-IO")
-        if open_times := TECHSTAR_LIB.adc_io_open() == -1:
+        if open_times := __TECHSTAR_LIB__.adc_io_open() == -1:
             _logger.error("Failed to open ADC-IO")
         else:
             _logger.debug(f"ADC-IO open {open_times} times")
@@ -96,7 +99,7 @@ class OnBoardSensors:
         close the adc-io plug
         """
         _logger.info("Closing ADC-IO")
-        if TECHSTAR_LIB.adc_io_close() == -1:
+        if __TECHSTAR_LIB__.adc_io_close() == -1:
             _logger.error("Failed to close ADC-IO")
         return self
 
@@ -115,7 +118,7 @@ class OnBoardSensors:
 
             return self._adc_cache
         self.__adc_last_sample_timestamp = current
-        if TECHSTAR_LIB.ADC_GetAll(self._adc_all):
+        if __TECHSTAR_LIB__.ADC_GetAll(self._adc_all):
             _logger.error("Failed to get all ADC channels")
         self._adc_cache = tuple(self._adc_all)
         return self._adc_cache  # type: ignore
@@ -139,7 +142,7 @@ class OnBoardSensors:
             If the `adc_io_Set` method returns a truthy value, an error message is logged.
             The function returns the instance of the class.
         """
-        if TECHSTAR_LIB.adc_io_Set(index, level):
+        if __TECHSTAR_LIB__.adc_io_Set(index, level):
             _logger.error(f"Failed to set IO level, index: {index}, level: {level}")
         return self
 
@@ -161,7 +164,7 @@ class OnBoardSensors:
             If the `adc_io_SetAll` method returns a truthy value, an error message is logged.
             The function returns the instance of the class.
         """
-        if TECHSTAR_LIB.adc_io_SetAll(level):
+        if __TECHSTAR_LIB__.adc_io_SetAll(level):
             _logger.error("Failed to set all IO level")
         return self
 
@@ -177,7 +180,7 @@ class OnBoardSensors:
             0b00000001 => 第io0为输入模式，可用于外接传感器
         """
         buffer = ctypes.c_char()
-        if TECHSTAR_LIB.adc_io_ModeGetAll(buffer):
+        if __TECHSTAR_LIB__.adc_io_ModeGetAll(buffer):
             _logger.error("Failed to get all IO mode")
         return buffer.value[0]
 
@@ -193,7 +196,7 @@ class OnBoardSensors:
             int: The level of the specified IO index, which is calculated based on the result of adc_io_InputGetAll().
 
         """
-        return (TECHSTAR_LIB.adc_io_InputGetAll() >> index) & 1
+        return (__TECHSTAR_LIB__.adc_io_InputGetAll() >> index) & 1
 
     def set_all_io_mode(self, mode: Literal[0, 1]) -> Self:
         """
@@ -213,7 +216,7 @@ class OnBoardSensors:
             If the `adc_io_ModeSetAll` method returns a truthy value, an error message is logged.
             The function returns the instance of the class.
         """
-        if TECHSTAR_LIB.adc_io_ModeSetAll(mode):
+        if __TECHSTAR_LIB__.adc_io_ModeSetAll(mode):
             _logger.error(f"Failed to set all IO mode to {mode}")
         return self
 
@@ -238,7 +241,7 @@ class OnBoardSensors:
             If the `adc_io_ModeSet` method returns a truthy value, an error message is logged.
             The function returns the instance of the class.
         """
-        if TECHSTAR_LIB.adc_io_ModeSet(index, mode):
+        if __TECHSTAR_LIB__.adc_io_ModeSet(index, mode):
             _logger.error(f"Failed to set IO mode, index: {index}, mode: {mode}")
         return self
 
@@ -253,7 +256,7 @@ class OnBoardSensors:
             0b10000000 => 第io7为高电平
             0b00000001 => 第io0为高电平
         """
-        return TECHSTAR_LIB.adc_io_InputGetAll().value
+        return __TECHSTAR_LIB__.adc_io_InputGetAll().value
 
     def MPU6500_Open(self) -> Self:
         """
@@ -264,7 +267,7 @@ class OnBoardSensors:
             sampling rate: 1kHz
         """
         _logger.info("Initializing MPU6500...")
-        if TECHSTAR_LIB.mpu6500_dmp_init():
+        if __TECHSTAR_LIB__.mpu6500_dmp_init():
             _logger.warning("Failed to initialize MPU6500")
         return self
 
@@ -280,7 +283,7 @@ class OnBoardSensors:
             [1] ==> axis Y
             [2] ==> axis Z
         """
-        TECHSTAR_LIB.mpu6500_Get_Accel(
+        __TECHSTAR_LIB__.mpu6500_Get_Accel(
             self._accel_all
         )  # this function return a C pointer to the self._accel_all
         return tuple(self._accel_all)  # type: ignore
@@ -299,7 +302,7 @@ class OnBoardSensors:
             [2] ==> axis Z
         """
 
-        TECHSTAR_LIB.mpu6500_Get_Gyro(
+        __TECHSTAR_LIB__.mpu6500_Get_Gyro(
             self._gyro_all
         )  # this function return a C pointer to the self._gyro_all
 
@@ -318,7 +321,7 @@ class OnBoardSensors:
             [1] ==> Roll |axis Y
             [2] ==> Yaw  |axis Z
         """
-        TECHSTAR_LIB.mpu6500_Get_Attitude(
+        __TECHSTAR_LIB__.mpu6500_Get_Attitude(
             self._atti_all
         )  # this function return a C pointer to the self._atti_all
 
@@ -338,4 +341,4 @@ class OnBoardSensors:
         Raises:
             AttributeError: If the attribute does not exist in the TECHSTAR_LIB object.
         """
-        return getattr(TECHSTAR_LIB, attr_name)
+        return getattr(__TECHSTAR_LIB__, attr_name)

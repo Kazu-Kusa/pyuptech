@@ -1,7 +1,6 @@
 import ctypes
 from functools import lru_cache
 
-from .constant import LIB_FILE_PATH
 from .logger import _logger
 
 
@@ -32,8 +31,6 @@ def load_lib(lib_file_path: str) -> ctypes.CDLL | None:
     _logger.info(f"Lib [{lib_file_path}] loaded")
     return obj
 
-
-TECHSTAR_LIB: ctypes.CDLL = load_lib(LIB_FILE_PATH)
 
 if __name__ == "__main__":
     pass

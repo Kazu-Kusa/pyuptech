@@ -1,5 +1,5 @@
 from .modules.emulation import SensorEmulator
-from .modules.loader import load_lib, TECHSTAR_LIB
+from .modules.loader import load_lib
 from .modules.logger import set_log_level
 from .modules.pins import (
     pin_setter_constructor,
@@ -28,8 +28,6 @@ __all__ = [
     "Screen",
     "Color",
     "FontSize",
-    "TECHSTAR_LIB",
-    "load_lib",
     "set_log_level",
     "pin_getter_constructor",
     "pin_setter_constructor",
