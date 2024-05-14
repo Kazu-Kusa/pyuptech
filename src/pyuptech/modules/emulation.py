@@ -2,6 +2,7 @@ import ctypes
 from random import randint
 from typing import Self, Literal, Any
 
+from .constant import BinaryIO
 from .sensors import OnBoardSensors, MPUDataPack, ADCDataPack
 
 
@@ -16,16 +17,16 @@ class SensorEmulator(OnBoardSensors):
     def adc_io_close(self) -> Self:
         return self
 
-    def set_io_level(self, index: int, level: Literal[0, 1]) -> Self:
+    def set_io_level(self, index: int, level: BinaryIO) -> Self:
         return self
 
-    def set_io_mode(self, index: int, mode: Literal[0, 1]) -> Self:
+    def set_io_mode(self, index: int, mode: BinaryIO) -> Self:
         return self
 
-    def set_all_io_mode(self, mode: Literal[0, 1]) -> Self:
+    def set_all_io_mode(self, mode: BinaryIO) -> Self:
         return self
 
-    def set_all_io_level(self, level: Literal[0, 1]) -> Self:
+    def set_all_io_level(self, level: BinaryIO) -> Self:
         return self
 
     @staticmethod
@@ -58,7 +59,7 @@ class SensorEmulator(OnBoardSensors):
         return tuple(self._atti_all)  # type: ignore
 
     @staticmethod
-    def get_io_level(index: Literal[0, 1, 2, 3, 4, 5, 6, 7]) -> int:
+    def get_io_level(index: Literal[0, 1, 2, 3, 4, 5, 6, 7] | int) -> int:
         return randint(0, 1)
 
     @staticmethod

@@ -2,7 +2,7 @@ import ctypes
 from time import perf_counter_ns
 from typing import Self, Literal, Any, Callable, Tuple, TypeAlias
 
-from .constant import LIB_FILE_PATH
+from .constant import LIB_FILE_PATH, BinaryIO
 from .loader import load_lib
 from .logger import _logger
 
@@ -123,7 +123,7 @@ class OnBoardSensors:
         self._adc_cache = tuple(self._adc_all)
         return self._adc_cache  # type: ignore
 
-    def set_io_level(self, index: int, level: Literal[0, 1]) -> Self:
+    def set_io_level(self, index: int, level: BinaryIO) -> Self:
         """
         Set the level of the specified IO index.
 
@@ -146,7 +146,7 @@ class OnBoardSensors:
             _logger.error(f"Failed to set IO level, index: {index}, level: {level}")
         return self
 
-    def set_all_io_level(self, level: Literal[0, 1]) -> Self:
+    def set_all_io_level(self, level: BinaryIO) -> Self:
         """
         Sets the level of all IOs to the specified level.
 
@@ -185,12 +185,12 @@ class OnBoardSensors:
         return buffer.value[0]
 
     @staticmethod
-    def get_io_level(index: Literal[0, 1, 2, 3, 4, 5, 6, 7]) -> int:
+    def get_io_level(index: int) -> int:
         """
         Get the level of the specified IO index.
 
         Args:
-            index (Literal[0, 1, 2, 3, 4, 5, 6, 7]): The index of the IO.
+            index (int): The index of the IO.
 
         Returns:
             int: The level of the specified IO index, which is calculated based on the result of adc_io_InputGetAll().
@@ -198,7 +198,7 @@ class OnBoardSensors:
         """
         return (__TECHSTAR_LIB__.adc_io_InputGetAll() >> index) & 1
 
-    def set_all_io_mode(self, mode: Literal[0, 1]) -> Self:
+    def set_all_io_mode(self, mode: BinaryIO) -> Self:
         """
         Sets the mode of all IOs to the specified mode.
 
@@ -221,7 +221,7 @@ class OnBoardSensors:
         return self
 
     def set_io_mode(
-        self, index: Literal[0, 1, 2, 3, 4, 5, 6, 7], mode: Literal[0, 1]
+        self, index: Literal[0, 1, 2, 3, 4, 5, 6, 7] | int, mode: BinaryIO
     ) -> Self:
         """
         Sets the mode of the specified IO index to the specified mode.

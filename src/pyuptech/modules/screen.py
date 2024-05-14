@@ -66,7 +66,7 @@ class Screen:
 
     lib = load_lib(LIB_FILE_PATH)
 
-    def __init__(self, screen_dir: Literal[1, 2] = None):
+    def __init__(self, screen_dir: Literal[1, 2] | int = None):
         """
         Initializes the Screen class.
 
@@ -80,7 +80,7 @@ class Screen:
         if screen_dir is not None:
             self.open(direction=screen_dir).fill_screen(Color.BLACK).refresh()
 
-    def open(self, direction: Literal[1, 2] = 2) -> Self:
+    def open(self, direction: Literal[1, 2] | int = 2) -> Self:
         """
         Open the LCD and set the displaying direction.
 
@@ -144,7 +144,7 @@ class Screen:
         self.lib.UG_SetBackcolor(color)
         return self
 
-    def set_led_color(self, index: Literal[0, 1], color: Color) -> Self:
+    def set_led_color(self, index: Literal[0, 1] | int, color: Color) -> Self:
         """
         Set the LED color at a specific index.
 
