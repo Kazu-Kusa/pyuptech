@@ -256,7 +256,7 @@ class OnBoardSensors:
             0b10000000 => 第io7为高电平
             0b00000001 => 第io0为高电平
         """
-        return __TECHSTAR_LIB__.adc_io_InputGetAll().value
+        return __TECHSTAR_LIB__.adc_io_InputGetAll()
 
     def MPU6500_Open(self) -> Self:
         """
@@ -269,6 +269,8 @@ class OnBoardSensors:
         _logger.info("Initializing MPU6500...")
         if __TECHSTAR_LIB__.mpu6500_dmp_init():
             _logger.warning("Failed to initialize MPU6500")
+            return self
+        _logger.info("MPU6500 initialized")
         return self
 
     def acc_all(self) -> MPUDataPack:

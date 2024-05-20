@@ -32,7 +32,11 @@ def set_emulation_mode(mode: Literal["on", "off"]):
             screen = None  # 仿真模式下，假设屏幕是脱机的
         case "off":
             sensors = (
-                OnBoardSensors().adc_io_open().set_all_io_mode(0).set_all_io_level(1)
+                OnBoardSensors()
+                .adc_io_open()
+                .set_all_io_mode(0)
+                .set_all_io_level(1)
+                .MPU6500_Open()
             )
             screen = (
                 Screen()
@@ -62,14 +66,14 @@ def mpu_display_on_lcd(mode: Literal["atti", "acc", "gyro"]):
             screen.put_string(0, 66, f"Yaw  :{attitude[2]:.2f}  ")
         case "gyro":
             gyro = sensors.gyro_all()
-            screen.put_string(0, 30, f"Gyro x {gyro[0]:.2}")
-            screen.put_string(0, 48, f"Gyro y {gyro[1]:.2}")
-            screen.put_string(0, 66, f"Gyro z {gyro[2]:.2}")
+            screen.put_string(0, 30, f"Gyro X {gyro[0]:.2f}")
+            screen.put_string(0, 48, f"Gyro Y {gyro[1]:.2f}")
+            screen.put_string(0, 66, f"Gyro Z {gyro[2]:.2f}")
         case "acc":
             accel = sensors.acc_all()
-            screen.put_string(0, 30, f"x_acc :{accel[0]:.2}")
-            screen.put_string(0, 44, f"y_acc :{accel[1]:.2}")
-            screen.put_string(0, 54, f"z_acc :{accel[2]:.2}")
+            screen.put_string(0, 30, f"ACC X :{accel[0]:.2f}")
+            screen.put_string(0, 44, f"ACC Y :{accel[1]:.2f}")
+            screen.put_string(0, 54, f"ACC Z :{accel[2]:.2f}")
     screen.refresh()
 
 
@@ -96,11 +100,11 @@ def mpu_display_on_console():
         combined_data.append(
             [
                 acc_names[i],
-                f"{sensors.acc_all()[i]:.2}",
+                f"{sensors.acc_all()[i]:.2f}",
                 gyro_names[i],
-                f"{sensors.gyro_all()[i]:.2}",
+                f"{sensors.gyro_all()[i]:.2f}",
                 atti_names[i],
-                f"{sensors.atti_all()[i]:.2}",
+                f"{sensors.atti_all()[i]:.2f}",
             ]
         )
 

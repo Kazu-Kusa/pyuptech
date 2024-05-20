@@ -10,10 +10,9 @@ from pyuptech import (
 class DisplayTests(unittest.TestCase):
 
     def setUp(self):
-        set_emulation_mode("on")
+        set_emulation_mode("off")
 
     def test_something(self):
-        print()
         adc_io_display_on_console()
         mpu_display_on_console()
 
