@@ -1,5 +1,4 @@
-import ctypes
-from ctypes import c_byte
+from ctypes import c_byte, c_int, c_uint, byref, Array, CDLL, c_uint16, c_float
 from time import perf_counter_ns
 from typing import Self, Literal, Any, Callable, Tuple, TypeAlias
 
@@ -17,17 +16,17 @@ HIGH = 1
 LOW = 0
 """
 # this will create a function that returns a C array, but it can't be recognized correctly by the pycharm
-ADCArrayType: Callable = ctypes.c_uint16 * 10  # type: ignore
+ADCArrayType: Callable = c_uint16 * 10  # type: ignore
 # on 32bit machine, this will create a C array of 3 floats with bit-width of 4 bytes
-MPUArrayType: Callable = ctypes.c_float * 3  # type: ignore
+MPUArrayType: Callable = c_float * 3  # type: ignore
 
 ADCDataPack: TypeAlias = Tuple[int, int, int, int, int, int, int, int, int, int]
 MPUDataPack: TypeAlias = Tuple[float, float, float]
 
-__TECHSTAR_LIB__: ctypes.CDLL = load_lib(LIB_FILE_PATH)
+__TECHSTAR_LIB__: CDLL = load_lib(LIB_FILE_PATH)
 
 # 定义_WORD为无符号短整型
-_WORD = ctypes.c_uint16
+_WORD = c_uint16
 
 
 class OnBoardSensors:
@@ -58,10 +57,10 @@ class OnBoardSensors:
         """
 
         self._adc_cache: ADCDataPack = (0,) * 10
-        self._adc_all: ctypes.Array = ADCArrayType()
-        self._accel_all: ctypes.Array = MPUArrayType()
-        self._gyro_all: ctypes.Array = MPUArrayType()
-        self._atti_all: ctypes.Array = MPUArrayType()
+        self._adc_all: Array = ADCArrayType()
+        self._accel_all: Array = MPUArrayType()
+        self._gyro_all: Array = MPUArrayType()
+        self._atti_all: Array = MPUArrayType()
 
         self.__adc_last_sample_timestamp: int = perf_counter_ns()
 
@@ -183,10 +182,10 @@ class OnBoardSensors:
             0b10000000 => 第io7为输出模式，可用于驱动舵机
             0b00000001 => 第io0为输入模式，可用于外接传感器
         """
-        buffer = ctypes.c_char()
-        if __TECHSTAR_LIB__.adc_io_ModeGetAll(buffer):
+        buffer = c_byte()
+        if __TECHSTAR_LIB__.adc_io_ModeGetAll(byref(buffer)):
             _logger.error("Failed to get all IO mode")
-        return buffer.value[0]
+        return buffer.value
 
     @staticmethod
     def get_io_level(index: int) -> int:
@@ -361,7 +360,7 @@ class OnBoardSensors:
         """
 
         # Calls the technology library function to obtain the gyroscope's FSR, storing the result in fsr_value
-        __TECHSTAR_LIB__.mpu_get_gyro_fsr(ctypes.byref(fsr_value := _WORD()))
+        __TECHSTAR_LIB__.mpu_get_gyro_fsr(byref(fsr_value := _WORD()))
         return fsr_value.value
 
     @staticmethod
@@ -376,7 +375,7 @@ class OnBoardSensors:
         """
 
         # Request the accelerometer full-scale range value
-        __TECHSTAR_LIB__.mpu_get_accel_fsr(ctypes.byref(fsr_value := c_byte()))
+        __TECHSTAR_LIB__.mpu_get_accel_fsr(byref(fsr_value := c_byte()))
         # Return the obtained accelerometer full-scale range value
         return fsr_value.value
 
@@ -392,7 +391,7 @@ class OnBoardSensors:
         """
 
         # Call the underlying library function to set the gyroscope's full-scale range
-        __TECHSTAR_LIB__.mpu_set_gyro_fsr(ctypes.c_uint(fsr))
+        __TECHSTAR_LIB__.mpu_set_gyro_fsr(c_uint(fsr))
         return self
 
     def mpu_set_accel_fsr(self, fsr: Literal[2, 4, 8, 16] | int) -> Self:
@@ -407,6 +406,6 @@ class OnBoardSensors:
         """
 
         __TECHSTAR_LIB__.mpu_set_accel_fsr(
-            ctypes.c_int(fsr)
+            c_int(fsr)
         )  # Invokes the library function to set the accelerometer's FSR
         return self

@@ -205,7 +205,8 @@ from pyuptech import (
     mpu_display_on_lcd,
     make_mpu_table,
     adc_io_display_on_lcd,
-    make_adc_io_table,
+    make_adc_table,
+    make_io_table,
     Screen)
 
 emu = SensorEmulator()
@@ -238,7 +239,8 @@ io_labels = {
 
 adc_io_display_on_lcd(sensors=emu, screen=scr, adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到LCD 
 
-make_adc_io_table(adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到终端 
+make_io_table(sensors=emu, io_labels=io_labels)
+make_adc_table(sensors=emu, adc_labels=adc_labels)  # 将ADC和GPIO数据打印到终端 
 
 
 ```
@@ -269,7 +271,7 @@ print(list(sensor_emulator.MPU6500_Open().acc_all()))
 from pyuptech import (
     Screen, SensorEmulator,
     make_mpu_table,
-    make_adc_io_table)
+    make_adc_table)
 
 # 启动模拟模式，以便打印可以正常使用随机生成的数据进行工作
 scr = Screen()
@@ -278,7 +280,7 @@ emu = SensorEmulator()
 print(make_mpu_table(sensors=emu))
 # 将MPU6500数据打印到终端
 
-print(make_adc_io_table(sensors=emu))
+print(make_adc_table(sensors=emu))
 # 将ADC和GPIO数据打印到终端
 
 ```

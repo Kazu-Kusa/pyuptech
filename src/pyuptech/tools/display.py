@@ -81,10 +81,9 @@ def make_mpu_table(sensors: OnBoardSensors) -> str:
     return table.table
 
 
-def make_adc_io_table(
+def make_adc_table(
     sensors: OnBoardSensors,
     adc_labels: Dict[int, str] = None,
-    io_labels: Dict[int, str] = None,
 ) -> str:
     """
     Generate and return a formatted string table containing ADC (Analog-to-Digital Converter) and IO (Input/Output) channel information.
@@ -92,7 +91,6 @@ def make_adc_io_table(
     Parameters:
         sensors: An instance of the `OnBoardSensors` class.
         adc_labels: A dictionary mapping ADC channel numbers (int) to custom names (str). Defaults to None, indicating no custom names are used.
-        io_labels: A dictionary mapping IO channel numbers (int) to custom names (str). Defaults to None, indicating no custom names are used.
 
     Returns:
         A string representation of the table, formatted using the terminaltables library.
@@ -107,18 +105,53 @@ def make_adc_io_table(
 
     # Use empty dictionaries as default values if adc_labels or io_labels are not provided
     adc_labels = adc_labels or {}
-    io_labels = io_labels or {}
 
     # Retrieve all ADC and IO channel data from the sensors module
     adc = sensors.adc_all_channels()
+
+    # Construct the rows of the table
+    rows = [
+        ["ADC Name"]
+        + [adc_labels.get(i, f"ADC{i}") for i in range(len(adc))],  # ADC Name row
+        ["ADC Data"] + [f"{x}" for x in adc],  # ADC Data row
+    ]
+
+    # Format the row data into a table using DoubleTable class
+    table = DoubleTable(rows)
+    table.inner_row_border = True  # Enable inner row borders
+    return table.table  # Return the formatted table string
+
+
+def make_io_table(
+    sensors: OnBoardSensors,
+    io_labels: Dict[int, str] = None,
+) -> str:
+    """
+    Generate and return a formatted string table containing IO (Input/Output) channel information.
+
+    Parameters:
+        sensors: An instance of the `OnBoardSensors` class.
+        io_labels: A dictionary mapping IO channel numbers (int) to custom names (str). Defaults to None, indicating no custom names are used.
+
+    Returns:
+        A string representation of the table, formatted using the terminaltables library.
+
+    Dependencies:
+        This function relies on external functions `io_all_channels()` and `get_all_io_mode()` from the `sensors` module.
+    """
+
+    from terminaltables import (
+        DoubleTable,
+    )  # Import library for formatting the table output
+
+    io_labels = io_labels or {}
+
+    # Retrieve all ADC and IO channel data from the sensors module
     io = sensors.io_all_channels()
     io_modes = sensors.get_all_io_mode()
 
     # Construct the rows of the table
     rows = [
-        ["ADC Name"]
-        + [adc_labels.get(i, f"ADC{i}") for i in range(10)],  # ADC Name row
-        ["ADC Data"] + [f"{x}" for x in adc],  # ADC Data row
         ["IO Name"] + [io_labels.get(i, f"IO{i}") for i in range(8)],  # IO Name row
         ["IO Data"] + [int(bit) for bit in f"{io:08b}"],  # IO Data row (binary)
         ["IO Mode"] + [int(bit) for bit in f"{io_modes:08b}"],  # IO Mode row (binary)
