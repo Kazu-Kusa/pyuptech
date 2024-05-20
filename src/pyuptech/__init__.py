@@ -15,11 +15,10 @@ from .modules.pins import (
 from .modules.screen import Screen, Color, FontSize
 from .modules.sensors import OnBoardSensors, ADCArrayType, MPUArrayType
 from .tools.display import (
-    set_emulation_mode,
     adc_io_display_on_lcd,
-    adc_io_display_on_console,
+    make_adc_io_table,
     mpu_display_on_lcd,
-    mpu_display_on_console,
+    make_mpu_table,
 )
 
 __all__ = [
@@ -42,9 +41,8 @@ __all__ = [
     "IndexedGetter",
     "IndexedSetter",
     # tools
-    "set_emulation_mode",
     "adc_io_display_on_lcd",
-    "adc_io_display_on_console",
+    "make_adc_io_table",
     "mpu_display_on_lcd",
-    "mpu_display_on_console",
+    "make_mpu_table",
 ]

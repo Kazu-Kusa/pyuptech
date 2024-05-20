@@ -1,20 +1,22 @@
 import unittest
 
 from pyuptech import (
-    set_emulation_mode,
-    adc_io_display_on_console,
-    mpu_display_on_console,
+    make_adc_io_table,
+    make_mpu_table,
 )
+from pyuptech.modules.screen import Screen
+from pyuptech.modules.sensors import OnBoardSensors
 
 
 class DisplayTests(unittest.TestCase):
 
     def setUp(self):
-        set_emulation_mode("off")
+        self.sen = OnBoardSensors()
+        self.scr = Screen()
 
     def test_something(self):
-        adc_io_display_on_console()
-        mpu_display_on_console()
+        make_adc_io_table(self.sen)
+        make_mpu_table(self.sen)
 
 
 if __name__ == "__main__":

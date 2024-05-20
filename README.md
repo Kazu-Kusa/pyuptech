@@ -201,18 +201,19 @@ set_log_level(CRITICAL)  # 上述代码与上面设置效果一致，即只记�
 
 ```python
 from pyuptech import (
-    set_emulation_mode,
+    SensorEmulator,
     mpu_display_on_lcd,
-    mpu_display_on_console,
+    make_mpu_table,
     adc_io_display_on_lcd,
-    adc_io_display_on_console)
+    make_adc_io_table,
+    Screen)
 
-# 关闭模拟模式，不关闭将无法进行正常的实机运行
-set_emulation_mode("off")
+emu = SensorEmulator()
+scr = Screen(screen_dir=2)
 
-mpu_display_on_console()  # 将MPU6500数据打印到终端
+print(make_mpu_table(sensors=emu))
 
-mpu_display_on_lcd(mode="acc")  # 将MPU6500加速度数据打印到LCD
+mpu_display_on_lcd(sensors=emu, screen=scr, mode="acc")  # 将MPU6500加速度数据打印到LCD
 
 # 定义ADC标签索引字典，可以空缺部分键值
 adc_labels = {
@@ -235,9 +236,9 @@ io_labels = {
     5: 'rtr'
 }
 
-adc_io_display_on_lcd(adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到LCD 
+adc_io_display_on_lcd(sensors=emu, screen=scr, adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到LCD 
 
-adc_io_display_on_console(adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到终端 
+make_adc_io_table(adc_labels=adc_labels, io_labels=io_labels)  # 将ADC和GPIO数据打印到终端 
 
 
 ```
@@ -266,16 +267,19 @@ print(list(sensor_emulator.MPU6500_Open().acc_all()))
 
 ```python
 from pyuptech import (
-    set_emulation_mode,
-    mpu_display_on_console,
-    adc_io_display_on_console)
+    Screen, SensorEmulator,
+    make_mpu_table,
+    make_adc_io_table)
 
 # 启动模拟模式，以便打印可以正常使用随机生成的数据进行工作
-set_emulation_mode("on")
+scr = Screen()
+emu = SensorEmulator()
 
-mpu_display_on_console()  # 将MPU6500数据打印到终端
+print(make_mpu_table(sensors=emu))
+# 将MPU6500数据打印到终端
 
-adc_io_display_on_console()  # 将ADC和GPIO数据打印到终端
+print(make_adc_io_table(sensors=emu))
+# 将ADC和GPIO数据打印到终端
 
 ```
 
