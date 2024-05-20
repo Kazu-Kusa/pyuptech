@@ -95,6 +95,17 @@ class Screen:
         self.lib.lcd_open(direction)
         return self
 
+    def close(self) -> Self:
+        """
+        Close the LCD.
+
+        Returns:
+          Self for chainable calls.
+        """
+        _logger.info("Closing LCD")
+        self.lib.lcd_close()
+        return self
+
     def refresh(self) -> Self:
         """
         Refresh the screen, printing the display data from the cache onto the screen.

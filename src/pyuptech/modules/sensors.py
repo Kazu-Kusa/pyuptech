@@ -1,4 +1,5 @@
 import ctypes
+from ctypes import c_byte
 from time import perf_counter_ns
 from typing import Self, Literal, Any, Callable, Tuple, TypeAlias
 
@@ -24,6 +25,9 @@ ADCDataPack: TypeAlias = Tuple[int, int, int, int, int, int, int, int, int, int]
 MPUDataPack: TypeAlias = Tuple[float, float, float]
 
 __TECHSTAR_LIB__: ctypes.CDLL = load_lib(LIB_FILE_PATH)
+
+# 定义_WORD为无符号短整型
+_WORD = ctypes.c_uint16
 
 
 class OnBoardSensors:
@@ -344,3 +348,65 @@ class OnBoardSensors:
             AttributeError: If the attribute does not exist in the TECHSTAR_LIB object.
         """
         return getattr(__TECHSTAR_LIB__, attr_name)
+
+    @staticmethod
+    def get_gyro_fsr() -> int:
+        """
+        Retrieves the Full Scale Range (FSR) of the gyroscope.
+
+        This method queries and returns the FSR value of the gyroscope from the technology library.
+
+        Returns:
+            int: The Full Scale Range value of the gyroscope.
+        """
+
+        # Calls the technology library function to obtain the gyroscope's FSR, storing the result in fsr_value
+        __TECHSTAR_LIB__.mpu_get_gyro_fsr(ctypes.byref(fsr_value := _WORD()))
+        return fsr_value.value
+
+    @staticmethod
+    def get_acc_fsr() -> int:
+        """
+        Retrieves the accelerometer full-scale range.
+
+        This static method fetches the current full-scale range for the accelerometer from the TECHSTAR_LIB.
+
+        Returns:
+            int: The value representing the accelerometer full-scale range.
+        """
+
+        # Request the accelerometer full-scale range value
+        __TECHSTAR_LIB__.mpu_get_accel_fsr(ctypes.byref(fsr_value := c_byte()))
+        # Return the obtained accelerometer full-scale range value
+        return fsr_value.value
+
+    def mpu_set_gyro_fsr(self, fsr: Literal[250, 500, 1000, 2000] | int) -> Self:
+        """
+        Sets the full-scale range for the gyroscope in the MPU.
+
+        Parameters:
+            fsr (Literal[250, 500, 1000, 2000] | int): Gyroscope full-scale range, can be one of 250, 500, 1000, or 2000 degrees per second.
+
+        Returns:
+            Self: Returns an instance of the function for method chaining.
+        """
+
+        # Call the underlying library function to set the gyroscope's full-scale range
+        __TECHSTAR_LIB__.mpu_set_gyro_fsr(ctypes.c_uint(fsr))
+        return self
+
+    def mpu_set_accel_fsr(self, fsr: Literal[2, 4, 8, 16] | int) -> Self:
+        """
+        Sets the accelerometer full-scale range (FSR) for the MPU.
+
+        Parameters:
+            fsr: Literal[2, 4, 8, 16] | int - The full-scale range of the accelerometer, with options being 2g, 4g, 8g, and 16g.
+
+        Returns:
+            Self: Returns the object itself to support method chaining.
+        """
+
+        __TECHSTAR_LIB__.mpu_set_accel_fsr(
+            ctypes.c_int(fsr)
+        )  # Invokes the library function to set the accelerometer's FSR
+        return self
