@@ -1,4 +1,14 @@
-from ctypes import c_byte, c_int, c_uint, byref, Array, CDLL, c_uint16, c_float
+from ctypes import (
+    c_byte,
+    c_int,
+    c_uint,
+    byref,
+    Array,
+    CDLL,
+    c_uint16,
+    c_float,
+    c_uint8,
+)
 from time import perf_counter_ns
 from typing import Self, Literal, Any, Callable, Tuple, TypeAlias
 
@@ -24,6 +34,7 @@ ADCDataPack: TypeAlias = Tuple[int, int, int, int, int, int, int, int, int, int]
 MPUDataPack: TypeAlias = Tuple[float, float, float]
 
 __TECHSTAR_LIB__: CDLL = load_lib(LIB_FILE_PATH)
+
 
 # 定义_WORD为无符号短整型
 _WORD = c_uint16
@@ -53,7 +64,7 @@ class OnBoardSensors:
             adc_min_sample_interval_ms (int): The minimum sample interval in milliseconds for the ADC channels. Defaults to 5.
 
         Examples:
-            >>> on_board = OnBoardSensors().adc_io_open().set_all_io_mode(0).set_all_io_level(1).MPU6500_Open()
+            >>> on_board = OnBoardSensors().adc_io_open().set_all_io_mode(0).set_all_io_levels(1).MPU6500_Open()
         """
 
         self._adc_cache: ADCDataPack = (0,) * 10
@@ -91,7 +102,7 @@ class OnBoardSensors:
         open the adc-io plug
         """
         _logger.info("Initializing ADC-IO")
-        if open_times := __TECHSTAR_LIB__.adc_io_open() == -1:
+        if (open_times := __TECHSTAR_LIB__.adc_io_open()) == -1:
             _logger.error("Failed to open ADC-IO")
         else:
             _logger.debug(f"ADC-IO open {open_times} times")
@@ -104,6 +115,8 @@ class OnBoardSensors:
         _logger.info("Closing ADC-IO")
         if __TECHSTAR_LIB__.adc_io_close() == -1:
             _logger.error("Failed to close ADC-IO")
+            return
+        _logger.debug("ADC-IO closed")
         return self
 
     def adc_all_channels(self) -> ADCDataPack:
@@ -126,49 +139,71 @@ class OnBoardSensors:
         self._adc_cache = tuple(self._adc_all)
         return self._adc_cache  # type: ignore
 
-    def set_io_level(self, index: int, level: BinaryIO) -> Self:
+    @staticmethod
+    def io_all_channels() -> int:
         """
-        Set the level of the specified IO index.
+        get all io plug input levels
+
+        uint8, each bit represents a channel, 1 for high, 0 for low
+
+        Examples:
+            0b10000000 => 第io7为高电平
+            0b00000001 => 第io0为高电平
+        """
+        return __TECHSTAR_LIB__.adc_io_InputGetAll()
+
+    @staticmethod
+    def get_io_level(index: int) -> int:
+        """
+        Get the level of the specified IO index.
 
         Args:
             index (int): The index of the IO.
-            level (Literal[0, 1]): The level to set.
 
         Returns:
-            Self: The instance of the class.
+            int: The level of the specified IO index, which is calculated based on the result of adc_io_InputGetAll().
 
-        Raises:
-            None
-
-        Description:
-            This function sets the level of the specified IO index using the `adc_io_Set` method from the `OnBoardSensors` class.
-            If the `adc_io_Set` method returns a truthy value, an error message is logged.
-            The function returns the instance of the class.
+        Note:
+            ONLY work in OUTPUT MODE
         """
-        if __TECHSTAR_LIB__.adc_io_Set(index, level):
-            _logger.error(f"Failed to set IO level, index: {index}, level: {level}")
-        return self
+        return (__TECHSTAR_LIB__.adc_io_InputGetAll() >> index) & 1
 
-    def set_all_io_level(self, level: BinaryIO) -> Self:
+    def set_all_io_levels(self, levels: int) -> Self:
         """
         Sets the level of all IOs to the specified level.
 
         Args:
-            level (Literal[0, 1]): The level to set for all IOs.
+            levels (int): The level to set for all IOs.
 
         Returns:
             Self: The instance of the class.
 
         Raises:
             None
-
-        Description:
-            This function sets the level of all IOs to the specified level using the `adc_io_SetAll` method from the `OnBoardSensors` class.
-            If the `adc_io_SetAll` method returns a truthy value, an error message is logged.
-            The function returns the instance of the class.
+        Note:
+            ONLY work in OUTPUT MODE
+        Examples:
+            levels = 0b0000 0001 => 第io0为高电平,其余为低电平
+            levels = 0b1000 0000 => 第io7为高电平，其余为低电平
         """
-        if __TECHSTAR_LIB__.adc_io_SetAll(level):
+        if __TECHSTAR_LIB__.adc_io_SetAll(c_uint(levels)):
             _logger.error("Failed to set all IO level")
+        return self
+
+    def flip_io_level(self, index: int) -> Self:
+        """
+        Flips the level of the specified IO index.
+        Args:
+            index:  The index of the IO.
+
+        Returns:
+            Self: The instance of the class.
+
+        Notes:
+            ONLY work in OUTPUT MODE
+        """
+        if __TECHSTAR_LIB__.adc_io_Set(c_uint(index)) == -1:
+            _logger.error(f"Failed to flip IO level, index: {index}")
         return self
 
     @staticmethod
@@ -182,24 +217,10 @@ class OnBoardSensors:
             0b10000000 => 第io7为输出模式，可用于驱动舵机
             0b00000001 => 第io0为输入模式，可用于外接传感器
         """
-        buffer = c_byte()
-        if __TECHSTAR_LIB__.adc_io_ModeGetAll(byref(buffer)):
+        buffer = c_uint8()
+        if __TECHSTAR_LIB__.adc_io_ModeGetAll(byref(buffer)) != 0:
             _logger.error("Failed to get all IO mode")
         return buffer.value
-
-    @staticmethod
-    def get_io_level(index: int) -> int:
-        """
-        Get the level of the specified IO index.
-
-        Args:
-            index (int): The index of the IO.
-
-        Returns:
-            int: The level of the specified IO index, which is calculated based on the result of adc_io_InputGetAll().
-
-        """
-        return (__TECHSTAR_LIB__.adc_io_InputGetAll() >> index) & 1
 
     def set_all_io_mode(self, mode: BinaryIO) -> Self:
         """
@@ -219,7 +240,8 @@ class OnBoardSensors:
             If the `adc_io_ModeSetAll` method returns a truthy value, an error message is logged.
             The function returns the instance of the class.
         """
-        if __TECHSTAR_LIB__.adc_io_ModeSetAll(mode):
+        mode_set = __TECHSTAR_LIB__.adc_io_ModeSet
+        if any(mode_set(c_uint(index), c_int(mode)) for index in range(8)):
             _logger.error(f"Failed to set all IO mode to {mode}")
         return self
 
@@ -244,23 +266,11 @@ class OnBoardSensors:
             If the `adc_io_ModeSet` method returns a truthy value, an error message is logged.
             The function returns the instance of the class.
         """
-        if __TECHSTAR_LIB__.adc_io_ModeSet(index, mode):
+        if __TECHSTAR_LIB__.adc_io_ModeSet(c_uint(index), c_int(mode)):
             _logger.error(f"Failed to set IO mode, index: {index}, mode: {mode}")
         return self
 
-    @staticmethod
-    def io_all_channels() -> int:
-        """
-        get all io plug input levels
-
-        uint8, each bit represents a channel, 1 for high, 0 for low
-
-        Examples:
-            0b10000000 => 第io7为高电平
-            0b00000001 => 第io0为高电平
-        """
-        return __TECHSTAR_LIB__.adc_io_InputGetAll()
-
+    # <editor-fold desc="MPU section">
     def MPU6500_Open(self) -> Self:
         """
         initialize the 6-axis enhancer MPU6500
@@ -409,3 +419,5 @@ class OnBoardSensors:
             c_int(fsr)
         )  # Invokes the library function to set the accelerometer's FSR
         return self
+
+    # </editor-fold>

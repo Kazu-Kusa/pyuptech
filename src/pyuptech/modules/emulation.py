@@ -17,16 +17,13 @@ class SensorEmulator(OnBoardSensors):
     def adc_io_close(self) -> Self:
         return self
 
-    def set_io_level(self, index: int, level: BinaryIO) -> Self:
-        return self
-
     def set_io_mode(self, index: int, mode: BinaryIO) -> Self:
         return self
 
     def set_all_io_mode(self, mode: BinaryIO) -> Self:
         return self
 
-    def set_all_io_level(self, level: BinaryIO) -> Self:
+    def set_all_io_levels(self, levels: BinaryIO) -> Self:
         return self
 
     @staticmethod

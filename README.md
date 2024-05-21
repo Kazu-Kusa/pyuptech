@@ -62,8 +62,8 @@ from typing import Tuple
 # 创建OnBoardSensors对象，设置模拟量传感器最小采样间隔为5ms
 sensor_controller = OnBoardSensors(adc_min_sample_interval_ms=5)
 
-# 初始化ADC,设置所有GPIO引脚为输入，设置初始电平为高
-sensor_controller.adc_io_open().set_all_io_mode(0).set_all_io_level(1)
+# 初始化ADC,设置所有GPIO引脚为输入
+sensor_controller.adc_io_open().set_all_io_mode(0)
 
 # 设置ADC最小采样间隔为10ms，防止请求堵塞STM32从机
 sensor_controller.adc_min_sample_interval_ms = 10
@@ -81,13 +81,13 @@ acceleration_data: Tuple[float, float, float] = sensor_controller.acc_all()
 # (x, y, z) = acceleration_data
 
 
-# 设置第3号GPIO引脚为输出并设置电平为低
+# 设置第3号GPIO引脚为输出并翻转电平
 sensor_controller.set_io_mode(2, 1)
-sensor_controller.set_io_level(2, 0)
+sensor_controller.flip_io_level(2)
 
-# 设置第4号GPIO引脚为输入并设置电平为低
+# 设置第4号GPIO引脚为输入并翻转电平
 sensor_controller.set_io_mode(3, 0)
-sensor_controller.set_io_level(3, 1)
+sensor_controller.flip_io_level(3)
 ```
 
 ---

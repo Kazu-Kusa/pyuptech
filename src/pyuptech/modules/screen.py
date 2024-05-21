@@ -33,27 +33,57 @@ class Color(Enum):
     All supported color display on the led/lcd
     """
 
-    WHITE = 0xFFFF
-    BLACK = 0x0000
-    BLUE = 0x001F
-    BRED = 0xF81F
-    GRED = 0xFFE0
-    GBLUE = 0x07FF
-    RED = 0xF800
-    MAGENTA = 0xF81F
-    GREEN = 0x07E0
-    CYAN = 0x7FFF
-    YELLOW = 0xFFE0
-    BROWN = 0xBC40
-    BRRED = 0xFC07
-    GRAY = 0x8430
-    DARKBLUE = 0x01CF
-    LIGHTBLUE = 0x7D7C
-    GRAYBLUE = 0x5458
-    LIGHTGREEN = 0x841F
-    LGRAY = 0xC618
-    LGRAYBLUE = 0xA651
-    LBBLUE = 0x2B12
+    @staticmethod
+    def new_color(r: int, g: int, b: int) -> int:
+        """
+        Generates a new color value based on the specified red, green, and blue components.
+
+        Parameters:
+        r (int): The red component of the color, between 0 and 255.
+        g (int): The green component of the color, between 0 and 255.
+        b (int): The blue component of the color, between 0 and 255.
+
+        Returns:
+        int: A 24-bit color value, with 8 bits for each red, green, and blue component.
+
+        Raises:
+        ValueError: If any color component is outside the range of 0 to 255.
+        """
+        # Validate that each color component is within the acceptable range
+        if any([c < 0 or c > 255 for c in (r, g, b)]):
+            raise ValueError("Color value must be between 0 and 255")
+
+        # Combine the red, green, and blue components into a single 24-bit color value
+        return (r << 16) + (g << 8) + b
+
+    WHITE = new_color(255, 255, 255)
+    GRAY = new_color(128, 128, 128)
+    BLACK = new_color(0, 0, 0)
+
+    RED = new_color(255, 0, 0)
+    GREEN = new_color(0, 255, 0)
+    BLUE = new_color(0, 0, 255)
+
+    B_RED = new_color(255, 0, 128)
+    G_RED = new_color(255, 128, 0)
+
+    G_BLUE = new_color(0, 128, 255)
+    R_BLUE = new_color(128, 0, 255)
+
+    R_GREEN = new_color(128, 255, 0)
+    B_GREEN = new_color(0, 255, 128)
+
+    YELLOW = new_color(255, 255, 0)
+    MAGENTA = new_color(255, 0, 255)
+    CYAN = new_color(0, 255, 255)
+
+    ORANGE = new_color(128, 128, 0)
+    PURPLE = new_color(128, 0, 128)
+    BLUEGREEN = new_color(0, 128, 128)
+
+    DARKBLUE = new_color(0, 0, 139)
+    DARKGREEN = new_color(0, 139, 0)
+    DARKRED = new_color(139, 0, 0)
 
 
 class Screen:
@@ -167,6 +197,18 @@ class Screen:
             Self: The instance of the class to allow for method chaining.
         """
         self.lib.adc_led_set(index, color.value)
+        return self
+
+    def set_led_0(self, color: Color) -> Self:
+        self.lib.adc_led_set(0, color.value)
+        return self
+
+    def set_led_1(self, color: Color) -> Self:
+        self.lib.adc_led_set(1, color.value)
+        return self
+
+    def set_led_hex(self, index: int, color: int) -> Self:
+        self.lib.adc_led_set(index, color)
         return self
 
     def fill_screen(self, color: Color) -> Self:
