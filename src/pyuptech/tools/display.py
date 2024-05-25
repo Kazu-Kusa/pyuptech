@@ -153,8 +153,9 @@ def make_io_table(
     # Construct the rows of the table
     rows = [
         ["IO Name"] + [io_labels.get(i, f"IO{i}") for i in range(8)],  # IO Name row
-        ["IO Data"] + [int(bit) for bit in f"{io:08b}"],  # IO Data row (binary)
-        ["IO Mode"] + [int(bit) for bit in f"{io_modes:08b}"],  # IO Mode row (binary)
+        ["IO Data"] + [int(bit) for bit in f"{io:08b}"[::-1]],  # IO Data row (binary)
+        ["IO Mode"]
+        + [int(bit) for bit in f"{io_modes:08b}"[::-1]],  # IO Mode row (binary)
     ]
 
     # Format the row data into a table using DoubleTable class

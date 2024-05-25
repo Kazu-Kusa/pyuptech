@@ -9,7 +9,7 @@ from pyuptech.modules.sensors import OnBoardSensors
 class DisplayTests(unittest.TestCase):
 
     def setUp(self):
-        self.sen = OnBoardSensors().adc_io_open().MPU6500_Open().set_all_io_mode(1)
+        self.sen = OnBoardSensors().adc_io_open().MPU6500_Open().set_all_io_mode(0)
         self.scr = Screen()
 
     def test_something(self):
