@@ -1,9 +1,31 @@
 from enum import Enum, IntEnum
-from typing import Literal, Self
+from typing import Literal, Self, Tuple
 
 from .constant import LIB_FILE_PATH
 from .loader import load_lib
 from .logger import _logger
+
+
+class ScreenDirection(IntEnum):
+    """
+    All supported screen direction enum
+    """
+
+    VERTICAL = 1
+    HORIZONTAL = 2
+
+    @property
+    def width(self) -> int:
+        return {
+            ScreenDirection.VERTICAL: 64,
+            ScreenDirection.HORIZONTAL: 128,
+        }[self]
+    @property
+    def height(self) -> int:
+        return {
+            ScreenDirection.VERTICAL: 128,
+            ScreenDirection.HORIZONTAL: 64,
+        }[self]
 
 
 class FontSize(Enum):
@@ -26,6 +48,46 @@ class FontSize(Enum):
     FONT_16X26 = 12
     FONT_22X36 = 13
     FONT_24X40 = 14
+
+    @property
+    def row_height(self):
+        return {
+            FontSize.FONT_4X6: 6,
+            FontSize.FONT_5X8: 8,
+            FontSize.FONT_5X12: 12,
+            FontSize.FONT_6X8: 8,
+            FontSize.FONT_6X10: 10,
+            FontSize.FONT_7X12: 12,
+            FontSize.FONT_8X8: 8,
+            FontSize.FONT_8X12: 12,
+            FontSize.FONT_8X14: 14,
+            FontSize.FONT_10X16: 16,
+            FontSize.FONT_12X16: 16,
+            FontSize.FONT_12X20: 20,
+            FontSize.FONT_16X26: 26,
+            FontSize.FONT_22X36: 36,
+            FontSize.FONT_24X40: 40,
+        }[self]
+
+    @property
+    def column_width(self):
+        return {
+            FontSize.FONT_4X6: 4,
+            FontSize.FONT_5X8: 5,
+            FontSize.FONT_5X12: 5,
+            FontSize.FONT_6X8: 6,
+            FontSize.FONT_6X10: 6,
+            FontSize.FONT_7X12: 7,
+            FontSize.FONT_8X8: 8,
+            FontSize.FONT_8X12: 8,
+            FontSize.FONT_8X14: 8,
+            FontSize.FONT_10X16: 10,
+            FontSize.FONT_12X16: 12,
+            FontSize.FONT_12X20: 12,
+            FontSize.FONT_16X26: 16,
+            FontSize.FONT_22X36: 22,
+            FontSize.FONT_24X40: 24,
+        }[self]
 
 
 class Color(IntEnum):
@@ -107,7 +169,9 @@ class Screen:
         Returns:
             None
         """
-
+        self._screen_size: Tuple[int, int] = (0, 0)
+        self._font_size: FontSize = FontSize.FONT_12X20
+        self._screen_dir: ScreenDirection = ScreenDirection(screen_dir) if screen_dir else None
         if screen_dir is not None:
             self.open(direction=screen_dir).fill_screen(Color.BLACK).refresh()
 
@@ -124,6 +188,7 @@ class Screen:
 
         _logger.info(f"Open LCD with direction: {direction}")
         __lib__.lcd_open(direction)
+        self._screen_dir = ScreenDirection(direction)
         return self
 
     def close(self) -> Self:
@@ -157,6 +222,7 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
+        self._font_size = font_size
         __lib__.LCD_SetFont(font_size.value)
         return self
 
@@ -208,10 +274,6 @@ class Screen:
         __lib__.adc_led_set(1, color)
         return self
 
-    def set_led_hex(self, index: int, color: int) -> Self:
-        __lib__.adc_led_set(index, color)
-        return self
-
     def fill_screen(self, color: Color | int) -> Self:
         """
         Fill the entire screen with the specified color.
@@ -237,9 +299,23 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        __lib__.UG_PutString(x, y, display_string)
+        __lib__.UG_PutString(x, y, display_string.encode())
         return self
 
+    def print(self, display_string: str) -> Self:
+        """
+        Print a string to the LCD, automatically handling line breaks based on screen width.
+
+        Args:
+          display_string (str): The string to display on the LCD.
+
+        Returns:
+          Self for chainable calls.
+        """
+
+        __lib__.UG_PutString(0,0, display_string.encode())
+
+        return self
     def fill_frame(
         self, x1: int, y1: int, x2: int, y2: int, color: Color | int
     ) -> Self:

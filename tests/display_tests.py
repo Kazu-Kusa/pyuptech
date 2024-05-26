@@ -23,11 +23,19 @@ class DisplayTests(unittest.TestCase):
             print(f"\rnow is {c}", end="")
             sleep(1)
 
+    def test_print(self):
+        self.scr.open(2).print("this \nis very long stringasvasvasvavdadv").refresh()
+        # self.scr.put_string(30,30, "Hello World!").refresh()
     def test_color(self):
         from pyuptech import Color
 
         c = Color.new_color(255, 0, 0)
         print(c)
+
+    def test_scr_adc_io(self):
+        from pyuptech import adc_io_display_on_lcd
+        self.scr.open(2)
+        adc_io_display_on_lcd(self.sen, self.scr)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-import time
 from typing import Literal, Dict
 
 from ..modules.screen import Screen, Color, FontSize
@@ -167,7 +166,6 @@ def make_io_table(
 def adc_io_display_on_lcd(
     sensors: OnBoardSensors,
     screen: Screen,
-    interval: float = 0.01,
     adc_labels: Dict[int, str] = None,
     io_labels: Dict[int, str] = None,
 ):
@@ -177,7 +175,6 @@ def adc_io_display_on_lcd(
     Args:
         sensors: An instance of the `OnBoardSensors` class.
         screen: An instance of the `Screen` class.
-        interval (float, optional): The time interval between sensor readings in seconds. Defaults to 0.01.
         adc_labels (Dict[int, str], optional): A dictionary mapping ADC channel indices to custom labels. Defaults to None.
         io_labels (Dict[int, str], optional): A dictionary mapping IO channel indices to custom labels. Defaults to None.
 
@@ -187,8 +184,7 @@ def adc_io_display_on_lcd(
     Raises:
         KeyboardInterrupt: If the user interrupts the program by pressing Ctrl+C.
     """
-
-    screen.set_font_size(FontSize.FONT_6X8)
+    screen.fill_screen(Color.BLACK).set_font_size(FontSize.FONT_6X8)
     adc_labels = adc_labels or {}
     io_labels = io_labels or {}
     adc = sensors.adc_all_channels()
@@ -204,5 +200,5 @@ def adc_io_display_on_lcd(
         label = io_labels.get(i, f"[{i}]")
         value = io[i]
         screen.put_string(90, i * 8, f"{label}:{value}")
-    screen.fill_screen(Color.BLACK).refresh()
-    time.sleep(interval)
+    screen.refresh()
+
