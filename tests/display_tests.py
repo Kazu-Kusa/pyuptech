@@ -23,6 +23,12 @@ class DisplayTests(unittest.TestCase):
             print(f"\rnow is {c}", end="")
             sleep(1)
 
+    def test_color(self):
+        from pyuptech import Color
+
+        c = Color.new_color(255, 0, 0)
+        print(c)
+
 
 if __name__ == "__main__":
     unittest.main()

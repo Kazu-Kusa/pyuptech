@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import Literal, Self
 
 from .constant import LIB_FILE_PATH
@@ -28,7 +28,7 @@ class FontSize(Enum):
     FONT_24X40 = 14
 
 
-class Color(Enum):
+class Color(IntEnum):
     """
     All supported color display on the led/lcd
     """
@@ -86,6 +86,9 @@ class Color(Enum):
     DARKRED = new_color(139, 0, 0)
 
 
+__lib__ = load_lib(LIB_FILE_PATH)
+
+
 class Screen:
     """
     Screen module
@@ -93,8 +96,6 @@ class Screen:
     This class represents an LCD screen and provides methods to manipulate it.
     Each method returns self to enable chainable calls.
     """
-
-    lib = load_lib(LIB_FILE_PATH)
 
     def __init__(self, screen_dir: Literal[1, 2] | int = None):
         """
@@ -122,7 +123,7 @@ class Screen:
         """
 
         _logger.info(f"Open LCD with direction: {direction}")
-        self.lib.lcd_open(direction)
+        __lib__.lcd_open(direction)
         return self
 
     def close(self) -> Self:
@@ -133,7 +134,7 @@ class Screen:
           Self for chainable calls.
         """
         _logger.info("Closing LCD")
-        self.lib.lcd_close()
+        __lib__.lcd_close()
         return self
 
     def refresh(self) -> Self:
@@ -143,7 +144,7 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.LCD_Refresh()
+        __lib__.LCD_Refresh()
         return self
 
     def set_font_size(self, font_size: FontSize) -> Self:
@@ -156,10 +157,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.LCD_SetFont(font_size.value)
+        __lib__.LCD_SetFont(font_size.value)
         return self
 
-    def set_fore_color(self, color: Color) -> Self:
+    def set_fore_color(self, color: Color | int) -> Self:
         """
         Set the foreground color.
 
@@ -169,10 +170,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_SetForecolor(color)
+        __lib__.UG_SetForecolor(color)
         return self
 
-    def set_back_color(self, color: Color) -> Self:
+    def set_back_color(self, color: Color | int) -> Self:
         """
         Set the background color of the LCD.
 
@@ -182,10 +183,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_SetBackcolor(color)
+        __lib__.UG_SetBackcolor(color)
         return self
 
-    def set_led_color(self, index: Literal[0, 1] | int, color: Color) -> Self:
+    def set_led_color(self, index: Literal[0, 1] | int, color: Color | int) -> Self:
         """
         Set the LED color at a specific index.
 
@@ -196,22 +197,22 @@ class Screen:
         Returns:
             Self: The instance of the class to allow for method chaining.
         """
-        self.lib.adc_led_set(index, color.value)
+        __lib__.adc_led_set(index, color)
         return self
 
-    def set_led_0(self, color: Color) -> Self:
-        self.lib.adc_led_set(0, color.value)
+    def set_led_0(self, color: Color | int) -> Self:
+        __lib__.adc_led_set(0, color)
         return self
 
-    def set_led_1(self, color: Color) -> Self:
-        self.lib.adc_led_set(1, color.value)
+    def set_led_1(self, color: Color | int) -> Self:
+        __lib__.adc_led_set(1, color)
         return self
 
     def set_led_hex(self, index: int, color: int) -> Self:
-        self.lib.adc_led_set(index, color)
+        __lib__.adc_led_set(index, color)
         return self
 
-    def fill_screen(self, color: Color) -> Self:
+    def fill_screen(self, color: Color | int) -> Self:
         """
         Fill the entire screen with the specified color.
 
@@ -221,7 +222,7 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_FillScreen(color.value)
+        __lib__.UG_FillScreen(color)
         return self
 
     def put_string(self, x: int, y: int, display_string: str) -> Self:
@@ -236,10 +237,12 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_PutString(x, y, display_string)
+        __lib__.UG_PutString(x, y, display_string)
         return self
 
-    def fill_frame(self, x1: int, y1: int, x2: int, y2: int, color: Color) -> Self:
+    def fill_frame(
+        self, x1: int, y1: int, x2: int, y2: int, color: Color | int
+    ) -> Self:
         """
         Fill a rectangular frame with the specified color.
 
@@ -253,11 +256,11 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_FillFrame(x1, y1, x2, y2, color.value)
+        __lib__.UG_FillFrame(x1, y1, x2, y2, color)
         return self
 
     def fill_round_frame(
-        self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color
+        self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color | int
     ) -> Self:
         """
         Fill a rounded rectangular frame with the specified color.
@@ -273,10 +276,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_FillRoundFrame(x1, y1, x2, y2, r, color.value)
+        __lib__.UG_FillRoundFrame(x1, y1, x2, y2, r, color)
         return self
 
-    def fill_circle(self, x0: int, y0: int, r: int, color: Color) -> Self:
+    def fill_circle(self, x0: int, y0: int, r: int, color: Color | int) -> Self:
         """
         Fill a circle with the specified color.
 
@@ -289,10 +292,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_FillCircle(x0, y0, r, color.value)
+        __lib__.UG_FillCircle(x0, y0, r, color)
         return self
 
-    def draw_mesh(self, x1: int, y1: int, x2: int, y2: int, color: Color) -> Self:
+    def draw_mesh(self, x1: int, y1: int, x2: int, y2: int, color: Color | int) -> Self:
         """
         Draw a mesh pattern within a rectangle with the specified color.
 
@@ -306,10 +309,12 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_DrawMesh(x1, y1, x2, y2, color.value)
+        __lib__.UG_DrawMesh(x1, y1, x2, y2, color)
         return self
 
-    def draw_frame(self, x1: int, y1: int, x2: int, y2: int, color: Color) -> Self:
+    def draw_frame(
+        self, x1: int, y1: int, x2: int, y2: int, color: Color | int
+    ) -> Self:
         """
         Draw an empty rectangular frame with the specified color.
 
@@ -323,11 +328,11 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_DrawFrame(x1, y1, x2, y2, color.value)
+        __lib__.UG_DrawFrame(x1, y1, x2, y2, color)
         return self
 
     def draw_round_frame(
-        self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color
+        self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color | int
     ) -> Self:
         """
         Draw an empty rounded rectangular frame with the specified color.
@@ -343,10 +348,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_DrawRoundFrame(x1, y1, x2, y2, r, color.value)
+        __lib__.UG_DrawRoundFrame(x1, y1, x2, y2, r, color)
         return self
 
-    def draw_pixel(self, x0: int, y0: int, color: Color) -> Self:
+    def draw_pixel(self, x0: int, y0: int, color: Color | int) -> Self:
         """
         Draw a single pixel at the specified coordinates with the specified color.
 
@@ -358,10 +363,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_DrawPixel(x0, y0, color.value)
+        __lib__.UG_DrawPixel(x0, y0, color)
         return self
 
-    def draw_circle(self, x0: int, y0: int, r: int, color: Color) -> Self:
+    def draw_circle(self, x0: int, y0: int, r: int, color: Color | int) -> Self:
         """
         Draw an empty circle with the specified color.
 
@@ -374,10 +379,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_DrawCircle(x0, y0, r, color.value)
+        __lib__.UG_DrawCircle(x0, y0, r, color)
         return self
 
-    def draw_arc(self, x0: int, y0: int, r: int, s: int, color: Color) -> Self:
+    def draw_arc(self, x0: int, y0: int, r: int, s: int, color: Color | int) -> Self:
         """
         Draw an arc with the specified color.
 
@@ -391,10 +396,10 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_DrawArc(x0, y0, r, s, color.value)
+        __lib__.UG_DrawArc(x0, y0, r, s, color)
         return self
 
-    def draw_line(self, x1: int, y1: int, x2: int, y2: int, color: Color) -> Self:
+    def draw_line(self, x1: int, y1: int, x2: int, y2: int, color: Color | int) -> Self:
         """
         Draw a line between two points with the specified color.
 
@@ -408,7 +413,7 @@ class Screen:
         Returns:
           Self for chainable calls.
         """
-        self.lib.UG_DrawLine(x1, y1, x2, y2, color.value)
+        __lib__.UG_DrawLine(x1, y1, x2, y2, color)
         return self
 
 
