@@ -1,6 +1,6 @@
 [project]
 name = "pyuptech"
-version = "0.1.6.1"
+version = "0.1.6.2"
 description = "A Python wrapper for the uptech binary lib"
 authors = [
     { name = "Whth", email = "88489697+Whth@users.noreply.github.com" },
