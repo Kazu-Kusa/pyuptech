@@ -16,12 +16,25 @@ class ScreenDirection(IntEnum):
 
     @property
     def width(self) -> int:
+        """
+        Returns the width of the screen based on the screen direction.
+
+        :return: An integer representing the width of the screen.
+        :rtype: int
+        """
         return {
             ScreenDirection.VERTICAL: 64,
             ScreenDirection.HORIZONTAL: 128,
         }[self]
+
     @property
     def height(self) -> int:
+        """
+        Returns the height of the screen based on the screen direction.
+
+        :return: An integer representing the height of the screen.
+        :rtype: int
+        """
         return {
             ScreenDirection.VERTICAL: 128,
             ScreenDirection.HORIZONTAL: 64,
@@ -50,7 +63,13 @@ class FontSize(Enum):
     FONT_24X40 = 14
 
     @property
-    def row_height(self):
+    def row_height(self) -> int:
+        """
+        Returns the row height of the current font size.
+
+        :return: An integer representing the row height of the current font size.
+        :rtype: int
+        """
         return {
             FontSize.FONT_4X6: 6,
             FontSize.FONT_5X8: 8,
@@ -70,7 +89,13 @@ class FontSize(Enum):
         }[self]
 
     @property
-    def column_width(self):
+    def column_width(self) -> int:
+        """
+        Returns the column width of the current font size.
+
+        :return: An integer representing the column width of the current font size.
+        :rtype: int
+        """
         return {
             FontSize.FONT_4X6: 4,
             FontSize.FONT_5X8: 5,
@@ -267,11 +292,71 @@ class Screen:
         return self
 
     def set_led_0(self, color: Color | int) -> Self:
+        """
+        Set the color of LED 0.
+
+        Args:
+            color (Color | int): The color to set for LED 0.
+
+        Returns:
+            Self: The instance of the class to allow for method chaining.
+        """
         __lib__.adc_led_set(0, color)
         return self
 
     def set_led_1(self, color: Color | int) -> Self:
+        """
+        Set the color of LED 1.
+
+        Args:
+            color (Color | int): The color to set for LED 1.
+
+        Returns:
+            Self: The instance of the class to allow for method chaining.
+        """
         __lib__.adc_led_set(1, color)
+        return self
+
+    def set_all_leds_same(self, color: Color | int) -> Self:
+        """
+        Sets the color of both LEDs to the same value.
+
+        Parameters:
+            color (Color | int): The color to set for both LEDs.
+
+        Returns:
+            Self: The instance of the class to allow for method chaining.
+        """
+        __lib__.adc_led_set(0, color)
+        __lib__.adc_led_set(1, color)
+        return self
+
+    def set_all_leds_single(self, first: Color | int, second: Color | int) -> Self:
+        """
+        Sets the color of both LEDs to different values.
+
+        Parameters:
+            first (Color | int): The color to set for the first LED.
+            second (Color | int): The color to set for the second LED.
+
+        Returns:
+            Self: The instance of the class to allow for method chaining.
+        """
+        __lib__.adc_led_set(0, first)
+        __lib__.adc_led_set(1, second)
+        return self
+
+    def set_all_leds_off(self) -> Self:
+        """
+        Set all LEDs to off state.
+
+        This function sets the color of both LEDs to 0, effectively turning them off.
+
+        Returns:
+            Self: The instance of the class to allow for method chaining.
+        """
+        __lib__.adc_led_set(0, 0)
+        __lib__.adc_led_set(1, 0)
         return self
 
     def fill_screen(self, color: Color | int) -> Self:
@@ -313,11 +398,12 @@ class Screen:
           Self for chainable calls.
         """
 
-        __lib__.UG_PutString(0,0, display_string.encode())
+        __lib__.UG_PutString(0, 0, display_string.encode())
 
         return self
+
     def fill_frame(
-        self, x1: int, y1: int, x2: int, y2: int, color: Color | int
+            self, x1: int, y1: int, x2: int, y2: int, color: Color | int
     ) -> Self:
         """
         Fill a rectangular frame with the specified color.
@@ -336,7 +422,7 @@ class Screen:
         return self
 
     def fill_round_frame(
-        self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color | int
+            self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color | int
     ) -> Self:
         """
         Fill a rounded rectangular frame with the specified color.
@@ -389,7 +475,7 @@ class Screen:
         return self
 
     def draw_frame(
-        self, x1: int, y1: int, x2: int, y2: int, color: Color | int
+            self, x1: int, y1: int, x2: int, y2: int, color: Color | int
     ) -> Self:
         """
         Draw an empty rectangular frame with the specified color.
@@ -408,7 +494,7 @@ class Screen:
         return self
 
     def draw_round_frame(
-        self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color | int
+            self, x1: int, y1: int, x2: int, y2: int, r: int, color: Color | int
     ) -> Self:
         """
         Draw an empty rounded rectangular frame with the specified color.
