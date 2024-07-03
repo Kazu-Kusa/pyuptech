@@ -194,7 +194,7 @@ def adc_io_display_on_lcd(
         value = adc[i]
         screen.put_string(0, i * 8, f"{label}:{value}")
 
-    io = [int(bit) for bit in f"{sensors.io_all_channels():08b}"]
+    io = [int(bit) for bit in f"{sensors.io_all_channels():08b}"[::-1]]
     # 打印 IO 通道值表格
     for i in range(8):
         label = io_labels.get(i, f"[{i}]")
