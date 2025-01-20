@@ -103,7 +103,7 @@ class OnBoardSensors:
         """
         _logger.info("Initializing ADC-IO")
         if (open_times := __TECHSTAR_LIB__.adc_io_open()) == -1:
-            _logger.error("Failed to open ADC-IO")
+            _logger.error("Failed to open ADC-IO. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
         else:
             _logger.debug(f"ADC-IO open {open_times} times")
         return self
@@ -114,7 +114,7 @@ class OnBoardSensors:
         """
         _logger.info("Closing ADC-IO")
         if __TECHSTAR_LIB__.adc_io_close() == -1:
-            _logger.error("Failed to close ADC-IO")
+            _logger.error("Failed to close ADC-IO. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
             return
         _logger.debug("ADC-IO closed")
         return self
@@ -135,7 +135,7 @@ class OnBoardSensors:
             return self._adc_cache
         self.__adc_last_sample_timestamp = current
         if __TECHSTAR_LIB__.ADC_GetAll(self._adc_all):
-            _logger.error("Failed to get all ADC channels")
+            _logger.error("Failed to get all ADC channels. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
         self._adc_cache = tuple(self._adc_all)
         return self._adc_cache  # type: ignore
 
@@ -187,7 +187,7 @@ class OnBoardSensors:
             levels = 0b1000 0000 => 第io7为高电平，其余为低电平
         """
         if __TECHSTAR_LIB__.adc_io_SetAll(c_uint(levels)):
-            _logger.error("Failed to set all IO level")
+            _logger.error("Failed to set all IO level. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
         return self
 
     def flip_io_level(self, index: int) -> Self:
@@ -203,7 +203,7 @@ class OnBoardSensors:
             ONLY work in OUTPUT MODE
         """
         if __TECHSTAR_LIB__.adc_io_Set(c_uint(index)) == -1:
-            _logger.error(f"Failed to flip IO level, index: {index}")
+            _logger.error(f"Failed to flip IO level, index: {index}. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
         return self
 
     @staticmethod
@@ -219,7 +219,7 @@ class OnBoardSensors:
         """
         buffer = c_uint8()
         if __TECHSTAR_LIB__.adc_io_ModeGetAll(byref(buffer)) != 0:
-            _logger.error("Failed to get all IO mode")
+            _logger.error("Failed to get all IO mode. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
         return buffer.value
 
     def set_all_io_mode(self, mode: BinaryIO) -> Self:
@@ -242,7 +242,7 @@ class OnBoardSensors:
         """
         mode_set = __TECHSTAR_LIB__.adc_io_ModeSet
         if any(mode_set(c_uint(index), c_int(mode)) for index in range(8)):
-            _logger.error(f"Failed to set all IO mode to {mode}")
+            _logger.error(f"Failed to set all IO mode to {mode}. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
         return self
 
     def set_io_mode(
@@ -267,7 +267,7 @@ class OnBoardSensors:
             The function returns the instance of the class.
         """
         if __TECHSTAR_LIB__.adc_io_ModeSet(c_uint(index), c_int(mode)):
-            _logger.error(f"Failed to set IO mode, index: {index}, mode: {mode}")
+            _logger.error(f"Failed to set IO mode, index: {index}, mode: {mode}. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
         return self
 
     # <editor-fold desc="MPU section">
@@ -281,7 +281,7 @@ class OnBoardSensors:
         """
         _logger.info("Initializing MPU6500...")
         if __TECHSTAR_LIB__.mpu6500_dmp_init():
-            _logger.warning("Failed to initialize MPU6500")
+            _logger.warning("Failed to initialize MPU6500. Do check if the channel is opened by calling 'adc_io_open()' and the libuptech.so being loaded properly")
             return self
         _logger.info("MPU6500 initialized")
         return self
